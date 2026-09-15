@@ -1,0 +1,1 @@
+<div class="grid three"><label>กิจกรรม / ช่วงไม่ว่าง<input wire:model="event.title" maxlength="255" required placeholder="เช่น เรียน พักเที่ยง"></label><label>เริ่ม<input type="datetime-local" wire:model="event.starts_at" required></label><label>สิ้นสุด<input type="datetime-local" wire:model="event.ends_at" required></label></div>
