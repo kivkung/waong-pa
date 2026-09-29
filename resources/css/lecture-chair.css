@@ -1,0 +1,92 @@
+.lecture-hero {
+    display: grid;
+    grid-template-columns: 1.15fr 1fr;
+    align-items: center;
+    gap: 2rem;
+    overflow: hidden;
+    position: relative;
+    background: radial-gradient(ellipse at 85% 30%, #f5f8e9, transparent 58%), #e6f2eb;
+}
+
+.lecture-hero-copy { position: relative; z-index: 1; }
+.lecture-hero-copy h1 { max-width: 17ch; line-height: 1.35; }
+.lecture-hero-copy .btn { margin: .25rem .25rem .25rem 0; }
+.lecture-scene { position: relative; text-align: center; min-width: 0; }
+.lecture-scene::before {
+    content: '';
+    position: absolute;
+    width: 78%;
+    aspect-ratio: 1;
+    border: 1px solid #38634b18;
+    border-radius: 50%;
+    top: 8%;
+    left: 11%;
+    background: radial-gradient(circle, #ffffff60, #ffffff00 70%);
+}
+.lecture-seat-label {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    padding: .4rem .85rem;
+    border: 1px solid #3b624c22;
+    border-radius: 2rem;
+    font-size: .8rem;
+    color: #42624e;
+    background: #ffffff80;
+}
+.lecture-seat-label > span { width: 6px; height: 6px; background: #568a53; border-radius: 50%; }
+.lecture-chair-motion {
+    position: relative;
+    transform: perspective(850px) translate3d(var(--chair-x, 0px), var(--chair-y, 0px), 0) rotateX(var(--chair-rx, 0deg)) rotateY(var(--chair-ry, 0deg));
+    transition: transform 220ms ease-out;
+}
+.lecture-chair-art { width: 50%; max-width: 420px; height: auto; display: block; margin: 10px auto; }
+.lecture-scene-caption { position: relative; }
+.lecture-seat-number { font-size: .65rem; letter-spacing: .2em; color: #59725f; }
+.lecture-scene-caption p { font-size: .8rem; color: #59725f; margin: .35rem 0; }
+.lecture-preview { border: 0; background: transparent; color: #235d40; font: inherit; font-size: .85rem; padding: .5rem .75rem; text-decoration: underline; text-underline-offset: 4px; }
+.lecture-preview:hover { color: #132d21; }
+.lecture-preview:focus-visible, .lecture-dialog button:focus-visible { outline: 3px solid #698a4e; outline-offset: 4px; }
+.lecture-dialog {
+    position: fixed;
+    right: max(1.25rem, env(safe-area-inset-right));
+    bottom: calc(2.25rem + env(safe-area-inset-bottom));
+    z-index: 1040;
+    width: min(370px, calc(100% - 2rem));
+    transform: translateY(var(--popup-lag, 0px));
+}
+.lecture-dialog[hidden] { display: none; }
+.lecture-dialog-card {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    border: 1px solid #d7e3d7;
+    border-radius: 1.25rem;
+    padding: 1.1rem 2.6rem 1.1rem .5rem;
+    max-height: calc(100dvh - 5rem);
+    overflow-y: auto;
+    color: #21392e;
+    background: #f6f8ef;
+    box-shadow: 0 8px 32px #133c3020, 0 2px 6px #133c3008;
+}
+.lecture-dialog:not([hidden]) .lecture-dialog-card { animation: chair-dialog-enter 220ms ease-out; }
+.lecture-dialog-close { position: absolute; top: .15rem; right: .15rem; width: 44px; height: 44px; border: 0; border-radius: 50%; background: transparent; color: #627364; font-size: 1.5rem; line-height: 1; }
+.lecture-dialog-close:hover { background: #e6ecdf; }
+.lecture-dialog-chair { flex: 0 0 82px; }
+.lecture-dialog-copy { min-width: 0; }
+.lecture-dialog-eyebrow { color: #67805c; font-size: .55rem; letter-spacing: .17em; margin: 0 0 .4rem; }
+.lecture-dialog h2 { font-size: 1.1rem; line-height: 1.5; margin-bottom: .25rem; }
+.lecture-dialog p:not(.lecture-dialog-eyebrow) { color: #627364; font-size: .8rem; margin-bottom: .25rem; }
+.lecture-dialog-reply { background: transparent; border: 0; padding: .5rem 0; min-height: 44px; color: #235d40; font: inherit; font-size: .8rem; }
+@keyframes chair-dialog-enter { from { opacity: 0; transform: translateY(12px) scale(.97); } to { opacity: 1; transform: none; } }
+@media (max-width: 767.98px) {
+    .lecture-hero { grid-template-columns: 1fr; gap: 1.5rem; }
+    .lecture-hero-copy h1 { max-width: none; }
+    .lecture-scene { width: min(100%, 340px); margin-inline: auto; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .lecture-chair-motion { transform: none; transition: none; }
+    .lecture-dialog { transform: none; }
+    .lecture-dialog:not([hidden]) .lecture-dialog-card { animation: none; }
+}

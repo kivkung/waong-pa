@@ -1,0 +1,8 @@
+.room-card {
+    transition: box-shadow 0.2s ease;
+}
+
+.room-card:hover,
+.room-card:focus-within {
+    box-shadow: var(--bs-box-shadow);
+}
