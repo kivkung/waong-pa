@@ -5,6 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property \Carbon\CarbonImmutable|null $join_starts_at
+ * @property \Carbon\CarbonImmutable|null $review_starts_at
+ * @property \Carbon\CarbonImmutable|null $voting_starts_at
+ * @property \Carbon\CarbonImmutable|null $final_starts_at
+ * @property \Carbon\CarbonImmutable|null $cancelled_at
+ */
+
 class MeetingRound extends Model
 {
     public function casts(): array

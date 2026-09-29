@@ -23,7 +23,7 @@ class RoundController extends Controller
             ->exists();
 
         return $hasActiveRound
-            ? redirect()->route('rooms.show', compact('room'))->with('warning', 'ห้องนี้มีรอบที่ยังดำเนินการอยู่ กรุณาจบรอบเดิมหรือยกเลิกก่อนสร้างรอบใหม่')
+            ? redirect()->route('rooms.show', compact('room'))->with('warning', 'มีรอบที่ยังดำเนินการอยู่ กรุณาดำเนินการให้เสร็จสิ้น')
             : view('rooms.rounds.create', compact('room', 'hasActiveRound'));
     }
 
