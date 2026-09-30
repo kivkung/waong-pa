@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Room;
 use App\Models\RoomMember;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -13,6 +14,8 @@ use Illuminate\View\View;
 
 class RoomController extends Controller
 {
+    use SoftDeletes;
+
     public function create(): View
     {
         return view('rooms.create');
@@ -133,5 +136,18 @@ class RoomController extends Controller
             ->paginate(10, ['*'], 'rounds_page');
 
         return view('rooms.show', compact('room', 'isMember', 'isOwner', 'members', 'rounds'));
+    }
+
+    public function destroy(Request $request, Room $room): RedirectResponse
+    {
+        abort_unless(
+            $request->user()?->id === $room->owner_id,
+            $room->deleted_at !== null ? 404 : 403);
+
+        $room->delete();
+
+        return redirect()
+            ->route('home')
+            ->with('success', "ลบห้อง {$room->name} สำเร็จ");
     }
 }

@@ -42,9 +42,22 @@
                     class="list-group-item list-group-item-action px-0 py-3 card rounded-4 p-4 mb-2 transition-card round-card">
                     <div class="d-flex flex-wrap justify-content-between gap-2">
                         <strong>รอบที่ {{ $round->round_no }}</strong>
-                        <span class="badge text-bg-primary">
-                            {{ $round->status }}
-                        </span>
+                        @switch($round->status)
+                            @case('active')
+                                <span class="badge text-bg-primary">กำลังดำเนินการ</span>
+                                @break
+
+                            @case('cancelled')
+                                <span class="badge text-bg-danger">ยกเลิกแล้ว</span>
+                                @break
+
+                            @case('completed')
+                                <span class="badge text-bg-success">เสร็จสิ้น</span>
+                                @break
+
+                            @default
+                                <span class="badge text-bg-secondary">{{ $round->status }}</span>
+                        @endswitch
                     </div>
                     <div class="small text-secondary mt-2">
                         {{ $round->search_start_date->format('d/m/Y') }}
@@ -79,6 +92,9 @@
                                         <div class="fw-semibold account-name me-2">{{ $member->user->name }}</div>
                                         @if ((int) $member->user_id === (int) $room->owner_id)
                                             <span class="badge text-bg-success me-2">เจ้าของห้อง</span>
+                                        @endif
+                                        @if ((int) $member->user_id === (int) auth()->id())
+                                            <span class="badge text-bg-primary me-2">คุณ</span>
                                         @endif
                                     </div>
                                     <div class="small text-secondary mt-1">

@@ -4,6 +4,7 @@ use App\Http\Controllers\PublicDashboardController;
 use App\Http\Controllers\RoomController;
 use App\Http\Controllers\RoomMemberController;
 use App\Http\Controllers\RoundController;
+use App\Http\Controllers\RoundMemberController;
 use Illuminate\Support\Facades\Route;
 
 // Public pages: guests do not need to log in.
@@ -28,7 +29,12 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/rooms/{room}/rounds/create', [RoundController::class, 'create'])->name('rooms.rounds.create');
     Route::post('/rooms/{room}/rounds', [RoundController::class, 'store'])->name('rooms.rounds.store');
+    Route::patch('/rooms/{room}/rounds/{round}/cancel', [RoundController::class, 'cancel'])
+        ->whereNumber('round')
+        ->name('rooms.rounds.cancel');
 
+    Route::post('/rooms/{room}/rounds/{round}/members', [RoundMemberController::class, 'store'])
+        ->whereNumber('round')->name('rooms.rounds.members.store');
 });
 
 // The controller checks permission again when opening a private room.

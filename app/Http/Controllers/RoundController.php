@@ -46,7 +46,7 @@ class RoundController extends Controller
             'daily_end_time' => ['required', 'date_format:H:i', 'after_or_equal:daily_start_time'],
             'duration_minutes' => ['required', 'integer', 'min:30', 'max:600', 'multiple_of:30'],
             'professor_rule' => ['required', Rule::in(['at_least', 'all'])],
-            'min_professors' => ['exclude_if:professor,all', 'required', 'integer', 'min:1', 'max:100'],
+            'min_professors' => ['exclude_if:professor_rule,all', 'required', 'integer', 'min:1', 'max:100'],
             'join_starts_at' => ['required', 'date_format:Y-m-d\TH:i'],
             'review_starts_at' => ['required', 'date_format:Y-m-d\TH:i', 'after:join_starts_at', 'after:now'],
             'voting_starts_at' => ['required', 'date_format:Y-m-d\TH:i', 'after:review_starts_at'],
@@ -146,6 +146,47 @@ class RoundController extends Controller
 
         $round = $room->rounds()->findOrFail($round);
 
-        return view('rooms.rounds.show', compact('room', 'round'));
+        $hasJoined = false;
+
+        if ($isMember) {
+            $hasJoined = $round->members()
+                ->whereHas('roomMember', function ($query) use ($request) {
+                    $query->where('user_id', $request->user()->id);
+                })->exists();
+        }
+        
+        $now = now();
+
+        $canJoin = $isMember
+            && !$hasJoined
+            && $round->status === 'active'
+            && $round->phase === 'join'
+            && $now->gte($round->join_starts_at)
+            && $now->lt($round->review_starts_at);
+
+        return view('rooms.rounds.show', compact('room', 'round', 'hasJoined', 'canJoin'));
+    }
+
+    public function cancel(Request $request, Room $room, int $round) : RedirectResponse
+    {
+        abort_unless(
+            (int) $room->owner_id === (int) $request->user()->id,
+            $room->visibility === 'private' ? 404 : 403
+        );
+
+        $round = $room->rounds()->findOrFail($round);
+
+        if ($round->status !== 'active') {
+            return back()->with('warning', 'ยกเลิกได้เฉพาะรอบที่กำลังดำเนินการอยู่');
+        }
+
+        $round->status = 'cancelled';
+        $round->active_marker = null;
+        $round->cancelled_at = now();
+        $round->save();
+
+        return redirect()->route('rooms.show', ['room' => $room])
+            ->with('success', 'ยกเลิกรอบสำเร็จ');
+
     }
 }

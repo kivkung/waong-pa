@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property \Carbon\CarbonImmutable|null $join_starts_at
@@ -32,6 +33,12 @@ class MeetingRound extends Model
     public function room()
     {
         return $this->belongsTo(Room::class);
+    }
+
+    /** @return HasMany<RoundMember, $this> */
+    public function members(): HasMany
+    {
+        return $this->hasMany(RoundMember::class);
     }
     
 }
