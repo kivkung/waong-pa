@@ -35,6 +35,10 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/rooms/{room}/rounds/{round}/members', [RoundMemberController::class, 'store'])
         ->whereNumber('round')->name('rooms.rounds.members.store');
+    Route::get('/rooms/{room}/rounds/{round}/members/edit', [RoundMemberController::class, 'edit'])
+        ->whereNumber('round')->name('rooms.rounds.members.edit');
+    Route::patch('/rooms/{room}/rounds/{round}/members', [RoundMemberController::class, 'update'])
+        ->whereNumber('round')->name('rooms.rounds.members.update');
 });
 
 // The controller checks permission again when opening a private room.

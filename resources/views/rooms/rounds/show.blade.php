@@ -15,7 +15,7 @@
             <dd class="col-sm-8">{{ $room->name }}</dd>
 
             <dt class="col-sm-4">สถานะ</dt>
-            <dd class="col-sm-8">{{ $round->status }}</dd   >
+            <dd class="col-sm-8">{{ $round->status }}</dd>
 
             <dt class="col-sm-4">ช่วงวันที่ค้นหา</dt>
             <dd class="col-sm-8">
@@ -67,7 +67,7 @@
             ขณะนี้ระบบยังไม่เปลี่ยนเฟสอัตโนมัติตามเวลาที่กำหนด
         </p>
 
-        @if ($hasJoined)
+        @if ($hasJoined && $round->status === "active")
             <p class="text-success">
                 คุณเข้าร่วมรอบนี้แล้ว
             </p>
@@ -96,18 +96,75 @@
         @endif
 
         @auth
-            @if ((int) auth()->id() === (int) $room->owner_id && $round->status === 'active')
-                <form method="POST" action="{{ route('rooms.rounds.cancel', ['room' => $room, 'round' => $round]) }}"
-                    onsubmit="return confirm('ต้องการยกเลิกรอบนี้หรือไม่?')">
-                    @csrf
-                    @method('PATCH')
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                @if (((int) auth()->id() === (int) $room->owner_id) && ($round->status === "active"))
+                    <a href="{{ route('rooms.rounds.members.edit', [$room, $round]) }}" class="btn 
+                                    @if ($round->status === "active")
+                                        btn-outline-secondary
+                                    @else
+                                        btn-outline-warning
+                                    @endif
+                                    my-3">แก้ไขสมาชิกในรอบ</a>
+                @endif
+                @if ((int) auth()->id() === (int) $room->owner_id && $round->status === 'active')
+                    <form method="POST" action="{{ route('rooms.rounds.cancel', ['room' => $room, 'round' => $round]) }}"
+                        onsubmit="return confirm('ต้องการยกเลิกรอบนี้หรือไม่?')">
+                        @csrf
+                        @method('PATCH')
 
-                    <button type="submit" class="btn btn-outline-danger">
-                        ยกเลิกรอบ
-                    </button>
-                </form>
-            @endif
+                        <button type="submit" class="btn btn-outline-danger">
+                            ยกเลิกรอบ
+                        </button>
+                    </form>
+                @endif
+            </div>
         @endauth
 
+        @if ($roundMembers !== null)
+            <section class="card rounded-4 p-4 mt-4">
+                <h2 class="h5">
+                    สมาชิกในรอบ ({{ $roundMembers->total() }})
+                </h2>
+
+                <ul class="list-group list-group-flush">
+                    @forelse ($roundMembers as $roundMember)
+                        <li class="list-group-item px-0 py-3">
+                            <div class="fw-semibold">
+                                {{ $roundMember->roomMember->user->name }}
+                            </div>
+
+                            <div class="small text-secondary">
+                                {{ $roundMember->role === 'professor' ? 'อาจารย์' : 'นักศึกษา' }}
+                                · น้ำหนัก {{ $roundMember->weight }}
+                            </div>
+
+                            <div class="small text-secondary">
+                                เข้าร่วมเมื่อ
+                                {{ $roundMember->joined_at->format('d/m/Y H:i') }}
+                            </div>
+
+                            @if ($roundMember->confirmed_at)
+                                <span class="badge text-bg-success">
+                                    ยืนยันตารางแล้ว
+                                </span>
+                            @else
+                                <span class="badge text-bg-secondary">
+                                    ยังไม่ยืนยันตาราง
+                                </span>
+                            @endif
+                        </li>
+                    @empty
+                        <li class="list-group-item px-0 text-secondary">
+                            ยังไม่มีสมาชิกเข้าร่วมรอบนี้
+                        </li>
+                    @endforelse
+                </ul>
+
+                <div class="mt-3">
+                    {{ $roundMembers->links('pagination::bootstrap-5') }}
+                </div>
+            </section>
+        @endif
     </div>
+
 @endsection

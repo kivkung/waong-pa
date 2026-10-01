@@ -154,7 +154,7 @@ class RoundController extends Controller
                     $query->where('user_id', $request->user()->id);
                 })->exists();
         }
-        
+
         $now = now();
 
         $canJoin = $isMember
@@ -164,10 +164,19 @@ class RoundController extends Controller
             && $now->gte($round->join_starts_at)
             && $now->lt($round->review_starts_at);
 
-        return view('rooms.rounds.show', compact('room', 'round', 'hasJoined', 'canJoin'));
+        $roundMembers = null;
+
+        if ($isMember) {
+            $roundMembers = $round->members()
+                ->with('roomMember.user')
+                ->orderBy('id')
+                ->paginate(15, ['*'], 'members_page');
+        }
+
+        return view('rooms.rounds.show', compact('room', 'round', 'hasJoined', 'canJoin', 'roundMembers'));
     }
 
-    public function cancel(Request $request, Room $room, int $round) : RedirectResponse
+    public function cancel(Request $request, Room $room, int $round): RedirectResponse
     {
         abort_unless(
             (int) $room->owner_id === (int) $request->user()->id,

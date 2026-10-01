@@ -2,7 +2,10 @@
 @section('title', $room->name)
 @section('content')
     <div class="form-page mx-auto">
-        <a href="{{ route('dashboard') }}" class="text-success">← กลับ Dashboard</a>
+        <div class="d-flex flex-wrap justify-content-between align-middle gap-2">
+            <a href="{{ route('dashboard') }}" class="text-success">← กลับ Dashboard</a>
+            <button class="bi bi-gear-fill btn btn btn-outline-secondary"> ตั้งค่า</button>
+        </div>
         <article class="card rounded-4 p-4 p-md-5 mt-4">
             <div class="d-inline-flex gap-3">
                 <div><span class="badge text-bg-success">{{ $room->visibility === 'public' ? 'Public' : 'Private' }}</span>
@@ -37,6 +40,7 @@
         
         <div class="list-group list-group-flush card rounded-4 p-4 mt-4">
             <h2 class="h4">รอบนัดหมาย</h2>
+            <p class="text-secondary small">คลิ๊กเพื่อเพื่อดูรายละเอียดรอบ</p>
             @forelse ($rounds as $round)
                 <a href="{{ route('rooms.rounds.show', compact('room', 'round')) }}"
                     class="list-group-item list-group-item-action px-0 py-3 card rounded-4 p-4 mb-2 transition-card round-card">
@@ -94,7 +98,7 @@
                                             <span class="badge text-bg-success me-2">เจ้าของห้อง</span>
                                         @endif
                                         @if ((int) $member->user_id === (int) auth()->id())
-                                            <span class="badge text-bg-primary me-2">คุณ</span>
+                                            <span class="badge text-bg-secondary me-2">คุณ</span>
                                         @endif
                                     </div>
                                     <div class="small text-secondary mt-1">
