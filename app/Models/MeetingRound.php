@@ -2,18 +2,18 @@
 
 namespace App\Models;
 
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * @property \Carbon\CarbonImmutable|null $join_starts_at
- * @property \Carbon\CarbonImmutable|null $review_starts_at
- * @property \Carbon\CarbonImmutable|null $voting_starts_at
- * @property \Carbon\CarbonImmutable|null $final_starts_at
- * @property \Carbon\CarbonImmutable|null $cancelled_at
+ * @property CarbonImmutable|null $join_starts_at
+ * @property CarbonImmutable|null $review_starts_at
+ * @property CarbonImmutable|null $voting_starts_at
+ * @property CarbonImmutable|null $final_starts_at
+ * @property CarbonImmutable|null $cancelled_at
  */
-
 class MeetingRound extends Model
 {
     public function casts(): array
@@ -26,11 +26,12 @@ class MeetingRound extends Model
             'voting_starts_at' => 'immutable_datetime',
             'final_starts_at' => 'immutable_datetime',
             'cancelled_at' => 'immutable_datetime',
+            'snapshot_taken_at' => 'immutable_datetime',
         ];
     }
 
     /** @return BelongsTo<Room, $this> */
-    public function room()
+    public function room(): BelongsTo
     {
         return $this->belongsTo(Room::class);
     }
@@ -40,5 +41,15 @@ class MeetingRound extends Model
     {
         return $this->hasMany(RoundMember::class);
     }
-    
+
+    public function snapshotDueAt(): CarbonImmutable
+    {
+        return $this->review_starts_at->addMinutes(config('rounds.snapshot_delay_minutes'));
+    }
+
+    public function membershipLocked(): bool
+    {
+        return $this->status === 'active'
+            && ($this->phase !== 'join' || now()->gte($this->review_starts_at));
+    }
 }

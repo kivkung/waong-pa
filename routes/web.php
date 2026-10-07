@@ -5,6 +5,8 @@ use App\Http\Controllers\RoomController;
 use App\Http\Controllers\RoomMemberController;
 use App\Http\Controllers\RoundController;
 use App\Http\Controllers\RoundMemberController;
+use App\Http\Controllers\RoundResetController;
+use App\Http\Controllers\UserBusySlotController;
 use Illuminate\Support\Facades\Route;
 
 // Public pages: guests do not need to log in.
@@ -12,6 +14,14 @@ Route::get('/', [PublicDashboardController::class, 'index'])->name('home');
 Route::get('/dashboard', [PublicDashboardController::class, 'index'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
+    Route::get('/activities', [UserBusySlotController::class, 'index'])->name('activities.index');
+    Route::post('/activities', [UserBusySlotController::class, 'store'])->name('activities.store');
+    Route::get('/activities/{activity}/edit', [UserBusySlotController::class, 'edit'])->whereNumber('activity')->name('activities.edit');
+    Route::patch('/activities/{activity}', [UserBusySlotController::class, 'update'])->whereNumber('activity')->name('activities.update');
+    Route::delete('/activities/{activity}', [UserBusySlotController::class, 'destroy'])->whereNumber('activity')->name('activities.destroy');
+    Route::get('/rooms/{room}/rounds/{round}/reset', [RoundResetController::class, 'edit'])->whereNumber('round')->name('rooms.rounds.reset.edit');
+    Route::patch('/rooms/{room}/rounds/{round}/reset', [RoundResetController::class, 'update'])->whereNumber('round')->name('rooms.rounds.reset.update');
+
     Route::get('/rooms/create', [RoomController::class, 'create'])->name('rooms.create');
     Route::post('/rooms', [RoomController::class, 'store'])->name('rooms.store');
 

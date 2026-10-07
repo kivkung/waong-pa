@@ -81,6 +81,14 @@
             transform: rotate(2deg);
         }
 
+        .pagination {
+            --bs-pagination-color: #198754;
+            --bs-pagination-hover-color: #146c43;
+            --bs-pagination-hover-bg: #d1e7dd;
+            --bs-pagination-active-bg: #198754;
+            --bs-pagination-active-border-color: #198754;
+            --bs-pagination-focus-box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.25);
+        }
     </style>
     @stack('styles')
 </head>

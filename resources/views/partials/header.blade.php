@@ -6,6 +6,7 @@
                 <div class="navbar-nav flex-row flex-wrap gap-3 me-auto">
                     <a class="nav-link" href="{{ route('dashboard') }}">Dashboard</a>
                     @auth
+                        <a class="nav-link" href="{{ route('activities.index') }}">กิจกรรมส่วนตัว</a>
                         <a class="nav-link" href="{{ route('rooms.create') }}">สร้างห้อง</a>
                         <a class="nav-link" href="{{ route('rooms.join') }}">เข้าร่วมห้อง</a>
                     @endauth

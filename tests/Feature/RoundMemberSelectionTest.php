@@ -47,15 +47,13 @@ test('bulk adding snapshots members once without changing room membership or con
     $this->actingAs($this->owner)->patch($this->submit, ['member_ids' => [$this->member->id]])
         ->assertRedirect(route('rooms.rounds.show', [$this->room, $this->round]));
     $entry = $this->round->members()->firstOrFail();
-    $entry->confirmed_at = now();
-    $entry->save();
     $this->member->weight = 9;
     $this->member->save();
     $this->patch($this->submit, ['member_ids' => [$this->member->id]])->assertSessionHasNoErrors();
     $this->assertDatabaseCount('round_members', 1);
     $this->assertDatabaseCount('room_members', 2);
     expect((float) $entry->fresh()->weight)->toBe(3.0);
-    expect($entry->fresh()->confirmed_at)->not->toBeNull();
+    expect($entry->fresh()->joined_at)->not->toBeNull();
 });
 
 test('guests and non owners cannot use the picker', function () {
@@ -81,7 +79,6 @@ test('owner can deselect participants and they can join again themselves', funct
         ->assertSessionHasNoErrors()->assertSessionHas('success');
     $this->assertDatabaseHas('round_members', [
         'meeting_round_id' => $this->round->id, 'room_member_id' => $this->member->id,
-        'confirmed_at' => null,
     ]);
 });
 

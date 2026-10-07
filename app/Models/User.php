@@ -66,4 +66,10 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
     {
         return $this->hasMany(RoomMember::class);
     }
+
+    /** @return HasMany<UserBusySlot, $this> */
+    public function busySlots(): HasMany
+    {
+        return $this->hasMany(UserBusySlot::class);
+    }
 }

@@ -3,8 +3,24 @@
 @section('title', 'รายละเอียดรอบ')
 
 @section('content')
+
+    <div class="alert alert-info">
+        ปิดรับสมาชิก: {{ $round->review_starts_at->format('d/m/Y H:i') }}
+        · ระบบเริ่มดึงสำเนาได้ตั้งแต่ {{ $round->snapshotDueAt()->format('d/m/Y H:i') }} (ตรวจทุกนาที)
+        <p class="mb-0">เข้ารอบหมายถึงยินยอมให้ระบบใช้เวลาไม่ว่างของคุณโดยอัตโนมัติ</p>
+    </div>
+
     <div class="form-page mx-auto gap-1">
-        <a href="{{ route('rooms.show', compact('room')) }}" class="text-success">← กลับห้อง</a>
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <a href="{{ route('rooms.show', compact('room')) }}" class="text-success">← กลับห้อง</a>
+            @auth
+                @if ((int) auth()->id() === (int) $room->owner_id && $round->status === 'active')
+                    <a href="{{ route('rooms.rounds.reset.edit', [$room, $round]) }}"
+                        class="btn btn-outline-warning mb-3">รีเซ็ตรอบกลับ
+                        Join</a>
+                @endif
+            @endauth
+        </div>
 
         <h1 class="mt-3">รอบที่ {{ $round->round_no }}</h1>
 
@@ -63,8 +79,27 @@
             @endforeach
         </dl>
 
+        <dl>
+            <h2 class="h5">log</h2>
+            @if ($round->snapshot_taken_at)
+            <div class="row text-secondary">
+                <p>ข้อมูลนี้ถูกดึงเมื่อ {{ $round->snapshot_taken_at->format('d/m/Y H:i') }}</p>
+            </div>
+            @elseif ($round->phase !== 'join' || now()->gte($round->review_starts_at))
+            <div class="row text-secondary">
+                    <p>กำลังรวบรวมตาราง</p>
+                </div>
+            @endif
+        </dl>
+
+        @auth
+            <div class="row">
+                <a href="{{ route('activities.index') }}" class="btn btn-success mb-3">จัดการกิจกรรมส่วนตัว</a>
+            </div>
+        @endauth
+
         <p class="small text-secondary">
-            ขณะนี้ระบบยังไม่เปลี่ยนเฟสอัตโนมัติตามเวลาที่กำหนด
+            ระบบปิด Join อัตโนมัติตามกำหนด และดึงเวลาไม่ว่างหลังระยะรอที่แสดงด้านบน
         </p>
 
         @if ($hasJoined && $round->status === "active")
@@ -99,12 +134,12 @@
             <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
                 @if (((int) auth()->id() === (int) $room->owner_id) && ($round->status === "active"))
                     <a href="{{ route('rooms.rounds.members.edit', [$room, $round]) }}" class="btn 
-                                    @if ($round->status === "active")
-                                        btn-outline-secondary
-                                    @else
-                                        btn-outline-warning
-                                    @endif
-                                    my-3">แก้ไขสมาชิกในรอบ</a>
+                                                            @if ($round->status === "active")
+                                                                btn-outline-secondary
+                                                            @else
+                                                                btn-outline-warning
+                                                            @endif
+                                                            my-3">แก้ไขสมาชิกในรอบ</a>
                 @endif
                 @if ((int) auth()->id() === (int) $room->owner_id && $round->status === 'active')
                     <form method="POST" action="{{ route('rooms.rounds.cancel', ['room' => $room, 'round' => $round]) }}"
@@ -143,15 +178,7 @@
                                 {{ $roundMember->joined_at->format('d/m/Y H:i') }}
                             </div>
 
-                            @if ($roundMember->confirmed_at)
-                                <span class="badge text-bg-success">
-                                    ยืนยันตารางแล้ว
-                                </span>
-                            @else
-                                <span class="badge text-bg-secondary">
-                                    ยังไม่ยืนยันตาราง
-                                </span>
-                            @endif
+                            @include('rooms.rounds.busy-periods', ['participant' => $roundMember])
                         </li>
                     @empty
                         <li class="list-group-item px-0 text-secondary">

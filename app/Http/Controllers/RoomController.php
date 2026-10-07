@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Room;
 use App\Models\RoomMember;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -14,8 +13,6 @@ use Illuminate\View\View;
 
 class RoomController extends Controller
 {
-    use SoftDeletes;
-
     public function create(): View
     {
         return view('rooms.create');
@@ -72,7 +69,7 @@ class RoomController extends Controller
         $code = Str::upper(trim($validated['join_code']));
         $room = Room::where('join_code', $code)->first();
 
-        if (!$room) {
+        if (! $room) {
             return back()->withErrors(['join_code' => 'ไม่พบรหัสห้อง กรุณาตรวจสอบอีกครั้ง'])
                 ->withInput();
         }
@@ -90,7 +87,7 @@ class RoomController extends Controller
                 ->with('success', 'คุณเป็นสมาชิกห้องนี้อยู่แล้ว');
         }
 
-        if (!$member) {
+        if (! $member) {
             // The unique(room_id, user_id) constraint also prevents duplicate membership.
             $member = RoomMember::firstOrCreate(
                 ['room_id' => $room->id, 'user_id' => $request->user()->id],
@@ -133,7 +130,7 @@ class RoomController extends Controller
 
         $rounds = $room->rounds()
             ->orderByDesc('round_no')
-            ->paginate(10, ['*'], 'rounds_page');
+            ->paginate(5, ['*'], 'rounds_page');
 
         return view('rooms.show', compact('room', 'isMember', 'isOwner', 'members', 'rounds'));
     }

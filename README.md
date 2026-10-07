@@ -1,6 +1,12 @@
 # Waongpa Role 1 — Dashboard, สร้างห้อง และเข้าร่วมห้อง
 
-ส่วนนี้ใช้ Laravel Controller + Blade แบบพื้นฐานร่วมกับ Login/Register/Logout ของ Livewire Starter Kit เดิม ยังไม่มี round, schedule, vote หรือระบบเปลี่ยนเฟส
+ส่วนนี้ใช้ Laravel Controller + Blade แบบพื้นฐานร่วมกับ Login/Register/Logout ของ Livewire Starter Kit มีระบบห้อง รอบนัดหมาย และกิจกรรมส่วนตัวแล้ว
+
+## อัปเดต 2 ตุลาคม 2026 — สำเนาตารางอัตโนมัติ
+
+มีระบบกิจกรรมส่วนตัว, ปิด Join อัตโนมัติ, ดึงสำเนาเวลาไม่ว่างหลังระยะรอใน config, ล็อกการออก/นำสมาชิกออก และ reset รอบกลับ Join แล้ว อ่านกติกา migration และวิธีเปิด scheduler ใน [คู่มือสำเนาตาราง](docs/round-snapshots.md)
+
+ส่วนรายละเอียดเดิมด้านล่างเป็นบันทึกเฟสห้องก่อนเพิ่มระบบรอบ ให้ยึดคู่มือล่าสุดสำหรับกติกาตารางและสมาชิกที่เปลี่ยนไป
 
 ## ฟีเจอร์และสิทธิ์
 - Guest ดู Dashboard และรายละเอียดทั่วไปของห้อง Public ได้

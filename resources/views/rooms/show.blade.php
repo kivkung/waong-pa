@@ -116,6 +116,10 @@
                                     @endif
 
                                     @if (((int) $member->user_id === (int) auth()->id() || $isOwner) && ((int) $member->user_id != (int) $room->owner_id))
+                                        @php($locked = $room->rounds()->where('status', 'active')->whereHas('members', fn ($q) => $q->where('room_member_id', $member->id))->get()->contains(fn ($r) => $r->membershipLocked()))
+                                        @if ($locked)
+                                            <span class="text-secondary">{{ $isOwner ? 'รีเซ็ตรอบกลับ Join ก่อนนำสมาชิกออก' : 'ติดต่อเจ้าของห้องแทน' }}</span>
+                                        @else
                                         <form method="POST"
                                             action="{{ route('room.members.left', ['room' => $room, 'member' => $member]) }}">
                                             @csrf
@@ -123,6 +127,7 @@
                                                 {{ (int) $member->user_id === (int) auth()->id() ? 'ออกจากห้อง' : 'นำสมาชิกออก' }}
                                             </button>
                                         </form>
+                                        @endif
                                     @endif
                                 </div>
 

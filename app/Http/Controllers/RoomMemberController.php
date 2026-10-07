@@ -3,12 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Room;
-use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
-use PhpParser\Node\Expr\FuncCall;
 
 class RoomMemberController extends Controller
 {
@@ -49,29 +48,43 @@ class RoomMemberController extends Controller
         return redirect()->route('rooms.show', $room)
             ->with('success', 'บันทึกบทบาทและน้ำหนักสมาชิกแล้ว');
     }
-    
+
     public function left_members(Request $request, Room $room, int $member): RedirectResponse
     {
-         $member = $room->members()
-            ->where('status', 'active')
-            ->with('user')
-            ->findOrFail($member);
+        return DB::transaction(function () use ($request, $room, $member) {
+            $rounds = $room->rounds()->where('status', 'active')->orderBy('id')->lockForUpdate()->get();
+            $member = $room->members()
+                ->where('status', 'active')
+                ->with('user')
+                ->findOrFail($member);
 
-        $isSelf = (int) $member->user_id === (int) $request->user()->id;
-        $isOwner = (int) $room->owner_id === (int) $request->user()->id;
-        
-        abort_unless(
-            $isSelf || $isOwner,
-            $room->visibility === 'private' ? 404 : 403
-        );
-        abort_if((int) $member->user_id === (int) $room->owner_id, 403);
+            $isSelf = (int) $member->user_id === (int) $request->user()->id;
+            $isOwner = (int) $room->owner_id === (int) $request->user()->id;
 
-        $member->status = $isSelf ? 'left' : 'removed';
-        $member->left_at = now();
-        $member->save();
+            abort_unless(
+                $isSelf || $isOwner,
+                $room->visibility === 'private' ? 404 : 403
+            );
+            abort_if((int) $member->user_id === (int) $room->owner_id, 403);
 
-        return $isSelf 
-            ? redirect()->route('home')->with('success', 'คุณออกจากสมาชิกห้อง ' . $room->name . ' แล้ว') 
-            : redirect()->route('rooms.show', $room)->with('success', 'ลบผู้ใช้ ' .$member->user->name. ' ออกจากสมาชิกห้องแล้ว');
+            foreach ($rounds as $round) {
+                if ($round->members()->where('room_member_id', $member->id)->exists()) {
+                    if ($round->membershipLocked()) {
+                        return back()->with('warning', $isSelf
+                            ? 'ติดต่อเจ้าของห้องแทน'
+                            : 'ต้องรีเซ็ตรอบกลับ Join ก่อนนำสมาชิกออก');
+                    }
+                    $round->members()->where('room_member_id', $member->id)->delete();
+                }
+            }
+
+            $member->status = $isSelf ? 'left' : 'removed';
+            $member->left_at = now();
+            $member->save();
+
+            return $isSelf
+                ? redirect()->route('home')->with('success', 'คุณออกจากสมาชิกห้อง '.$room->name.' แล้ว')
+                : redirect()->route('rooms.show', $room)->with('success', 'ลบผู้ใช้ '.$member->user->name.' ออกจากสมาชิกห้องแล้ว');
+        });
     }
 }

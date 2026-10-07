@@ -26,40 +26,43 @@ class RoundMemberController extends Controller
         );
 
         // ป้องกันการส่ง ID รอบของห้องอื่น
-        $round = $room->rounds()->findOrFail($round);
+        return DB::transaction(function () use ($room, $round, $roomMember) {
+            $round = $room->rounds()->lockForUpdate()->findOrFail($round);
 
-        $now = now();
+            $roomMember = $room->members()->whereKey($roomMember->id)->where('status', 'active')->firstOrFail();
+            $now = now();
 
-        if (
-            $round->status !== 'active'
-            || $round->phase !== 'join'
-            || $now->lt($round->join_starts_at)
-            || $now->gte($round->review_starts_at)
-        ) {
+            if (
+                $round->status !== 'active'
+                || $round->phase !== 'join'
+                || $now->lt($round->join_starts_at)
+                || $now->gte($round->review_starts_at)
+            ) {
+                return redirect()->route('rooms.rounds.show', [
+                    'room' => $room,
+                    'round' => $round,
+                ])->with('warning', 'รอบนี้ยังไม่เปิดรับหรือปิดรับสมาชิกแล้ว');
+            }
+
+            $roundMember = $round->members()->firstOrCreate(
+                ['room_member_id' => $roomMember->id],
+                [
+                    'role' => $roomMember->role,
+                    'weight' => $roomMember->weight,
+                    'joined_at' => $now,
+                ]
+            );
+
             return redirect()->route('rooms.rounds.show', [
                 'room' => $room,
                 'round' => $round,
-            ])->with('warning', 'รอบนี้ยังไม่เปิดรับหรือปิดรับสมาชิกแล้ว');
-        }
-
-        $roundMember = $round->members()->firstOrCreate(
-            ['room_member_id' => $roomMember->id],
-            [
-                'role' => $roomMember->role,
-                'weight' => $roomMember->weight,
-                'joined_at' => $now,
-            ]
-        );
-
-        return redirect()->route('rooms.rounds.show', [
-            'room' => $room,
-            'round' => $round,
-        ])->with(
-            'success',
-            $roundMember->wasRecentlyCreated
-                ? 'เข้าร่วมรอบเรียบร้อยแล้ว'
-                : 'คุณเข้าร่วมรอบนี้แล้ว'
-        );
+            ])->with(
+                'success',
+                $roundMember->wasRecentlyCreated
+                    ? 'เข้าร่วมรอบเรียบร้อยแล้ว'
+                    : 'คุณเข้าร่วมรอบนี้แล้ว'
+            );
+        });
     }
 
     public function edit(Request $request, Room $room, int $round): View|RedirectResponse

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class RoundMember extends Model
 {
@@ -30,8 +31,13 @@ class RoundMember extends Model
     {
         return [
             'joined_at' => 'immutable_datetime',
-            'confirmed_at' => 'immutable_datetime',
             'weight' => 'decimal:2',
         ];
+    }
+
+    /** @return HasMany<RoundMemberBusyPeriod, $this> */
+    public function busyPeriods(): HasMany
+    {
+        return $this->hasMany(RoundMemberBusyPeriod::class);
     }
 }
