@@ -15,7 +15,6 @@
             <h1>สร้างห้องใหม่</h1>
             <p>ตั้งชื่อและรายละเอียดห้องเพื่อเริ่มนัดหมายร่วมกับสมาชิกของคุณ</p>
         </div>
-        <div class="wr-heading-icon" aria-hidden="true"><i class="bi bi-door-open"></i></div>
     </header>
     <div class="wr-form-layout">
         <section class="wr-panel" aria-labelledby="wr-create-form-title">

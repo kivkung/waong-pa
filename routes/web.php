@@ -24,7 +24,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/rooms/create', [RoomController::class, 'create'])->name('rooms.create');
     Route::post('/rooms', [RoomController::class, 'store'])->name('rooms.store');
-
+    Route::delete('/rooms/{room}/destroy', [RoomController::class,'destroy'])->name('rooms.destroy');
     Route::get('/rooms/join', [RoomController::class, 'joinForm'])->name('rooms.join');
     Route::post('/rooms/join', [RoomController::class, 'join'])
         ->middleware('throttle:10,1')->name('rooms.join.store');
@@ -33,7 +33,6 @@ Route::middleware('auth')->group(function () {
         ->whereNumber('member')->name('rooms.members.edit');
     Route::patch('/rooms/{room}/members/{member}', [RoomMemberController::class, 'update'])
         ->whereNumber('member')->name('rooms.members.update');
-
     Route::post('/rooms/{room}/members/left/{member}', [RoomMemberController::class, 'left_members'])
         ->whereNumber('member')->name('room.members.left');
 
@@ -47,6 +46,7 @@ Route::middleware('auth')->group(function () {
         ->whereNumber('round')->name('rooms.rounds.members.store');
     Route::get('/rooms/{room}/rounds/{round}/members/edit', [RoundMemberController::class, 'edit'])
         ->whereNumber('round')->name('rooms.rounds.members.edit');
+    
     Route::patch('/rooms/{room}/rounds/{round}/members', [RoundMemberController::class, 'update'])
         ->whereNumber('round')->name('rooms.rounds.members.update');
 });

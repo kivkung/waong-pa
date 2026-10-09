@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -10,9 +11,27 @@ class UserBusySlotController extends Controller
 {
     public function index(Request $request): View
     {
-        $activities = $request->user()->busySlots()->orderBy('start_at')->paginate(20);
+        $validated = $request->validate([
+            'week' => ['nullable', 'date_format:Y-m-d'],
+        ]);
+        $weekStart = CarbonImmutable::parse($validated['week'] ?? now()->toDateString())
+            ->startOfWeek(CarbonImmutable::MONDAY)
+            ->startOfDay();
+        $weekEnd = $weekStart->addWeek();
 
-        return view('activities.index', compact('activities'));
+        // ปฏิทินต้องได้กิจกรรมครบทั้งสัปดาห์ ไม่ขึ้นกับหน้าของรายการด้านล่าง
+        $calendarActivities = $request->user()->busySlots()
+            ->where('start_at', '<', $weekEnd)
+            ->where('end_at', '>', $weekStart)
+            ->orderBy('start_at')
+            ->get();
+
+        $activities = $request->user()->busySlots()
+            ->orderBy('start_at')
+            ->paginate(20)
+            ->withQueryString();
+
+        return view('activities.index', compact('activities', 'calendarActivities', 'weekStart', 'weekEnd'));
     }
 
     public function store(Request $request): RedirectResponse

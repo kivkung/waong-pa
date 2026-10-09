@@ -18,6 +18,95 @@
         <span class="schedule-heading-icon" aria-hidden="true"><i class="bi bi-calendar-week"></i></span>
     </header>
 
+    <section class="schedule-panel schedule-week-calendar" aria-labelledby="calendar-title">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+            <div>
+                <h2 id="calendar-title" class="h5 mb-1">ปฏิทินรายสัปดาห์</h2>
+                <p class="small text-secondary mb-0">
+                    {{ $weekStart->format('d/m/Y') }} – {{ $weekEnd->subDay()->format('d/m/Y') }}
+                </p>
+            </div>
+            <nav class="d-flex flex-wrap gap-2" aria-label="เลือกสัปดาห์">
+                <a class="btn btn-outline-success btn-sm"
+                   aria-label="สัปดาห์ก่อนหน้า"
+                   href="{{ route('activities.index', ['week' => $weekStart->subWeek()->toDateString()]) }}">
+                    ← ก่อนหน้า
+                </a>
+                <a class="btn btn-success btn-sm" href="{{ route('activities.index') }}">สัปดาห์นี้</a>
+                <a class="btn btn-outline-success btn-sm"
+                   aria-label="สัปดาห์ถัดไป"
+                   href="{{ route('activities.index', ['week' => $weekStart->addWeek()->toDateString()]) }}">
+                    ถัดไป →
+                </a>
+            </nav>
+        </div>
+
+        <div class="calendar-scroll" tabindex="0" role="region" aria-label="ปฏิทินกิจกรรมรายสัปดาห์">
+            <table class="calendar-table">
+                <colgroup>
+                    @for ($column = 0; $column < 7; $column++)
+                        <col style="width: {{ 100 / 7 }}%">
+                    @endfor
+                </colgroup>
+                <thead>
+                    <tr>
+                        @for ($column = 0; $column < 7; $column++)
+                            @php
+                                $calendarDay = $weekStart->addDays($column);
+                            @endphp
+                            <th scope="col">
+                                {{ $calendarDay->format('D') }}
+                                <small class="d-block">{{ $calendarDay->format('d/m') }}</small>
+                            </th>
+                        @endfor
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse ($calendarActivities as $calendarActivity)
+                        @php
+                            // จำกัดแถบให้อยู่ใน 7 วันของสัปดาห์ที่เลือก
+                            $startsBefore = $calendarActivity->start_at->lt($weekStart);
+                            $endsAfter = $calendarActivity->end_at->gt($weekEnd);
+                            $startColumn = $startsBefore ? 0 : $calendarActivity->start_at->dayOfWeekIso - 1;
+                            // เวลาสิ้นสุด 00:00 ไม่ถือว่ากินพื้นที่วันใหม่
+                            $endColumn = $calendarActivity->end_at->gte($weekEnd)
+                                ? 6
+                                : $calendarActivity->end_at->copy()->subMicrosecond()->dayOfWeekIso - 1;
+                            $span = $endColumn - $startColumn + 1;
+                        @endphp
+                        <tr>
+                            @for ($column = 0; $column < $startColumn; $column++)
+                                <td></td>
+                            @endfor
+                            <td colspan="{{ $span }}">
+                                <a class="activity-box" href="{{ route('activities.edit', $calendarActivity) }}">
+                                    <strong>{{ $calendarActivity->name }}</strong>
+                                    <small>
+                                        {{ $calendarActivity->start_at->format('d/m/Y H:i') }}
+                                        – {{ $calendarActivity->end_at->format('d/m/Y H:i') }}
+                                    </small>
+                                    @if ($startsBefore)
+                                        <small>← ต่อจากสัปดาห์ก่อน</small>
+                                    @endif
+                                    @if ($endsAfter)
+                                        <small>ต่อสัปดาห์ถัดไป →</small>
+                                    @endif
+                                </a>
+                            </td>
+                            @for ($column = $endColumn + 1; $column < 7; $column++)
+                                <td></td>
+                            @endfor
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="7" class="text-center text-secondary py-5">ยังไม่มีกิจกรรมในสัปดาห์นี้</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </section>
+
     <div class="schedule-grid">
         <section class="schedule-panel schedule-create" aria-labelledby="schedule-create-heading">
             <div class="schedule-panel-heading">

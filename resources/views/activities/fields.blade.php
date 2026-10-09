@@ -11,7 +11,7 @@
     <label for="name" class="form-label">ชื่อกิจกรรม <span class="schedule-optional">(เห็นเฉพาะคุณ)</span></label>
     <input id="name" name="name" class="form-control" maxlength="150" required placeholder="เช่น เรียน Web Application" value="{{ old('name', isset($activity) ? $activity->name : '') }}">
 </div>
-<div class="schedule-time-fields">
+<div>
     @foreach (['start_at' => 'เริ่ม', 'end_at' => 'สิ้นสุด'] as $field => $label)
         <div class="mb-3">
             <label for="{{ $field }}" class="form-label">{{ $label }}</label>

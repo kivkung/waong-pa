@@ -10,11 +10,12 @@
             <p class="room-description">{{ $room->description ?: 'ยังไม่มีรายละเอียดห้องนัดหมาย' }}</p>
         </div>
         <span class="badge {{ $room->visibility === 'public' ? 'text-bg-success' : 'text-bg-secondary' }} align-self-start mt-2">
-            <i class="bi {{ $room->visibility === 'public' ? 'bi-globe2' : 'bi-lock' }} me-1" aria-hidden="true"></i>
+            <i class="bi {{ $room->visibility === 'public' ? 'bi-globe2' 
+            
+            : 'bi-lock' }} me-1" aria-hidden="true"></i>
             {{ $room->visibility === 'public' ? 'สาธารณะ' : 'ส่วนตัว' }}
         </span>
     </div>
-
     <div class="wa-grid mb-4">
         <section class="wa-panel" aria-labelledby="room-overview-title">
             <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
@@ -22,7 +23,16 @@
                     <h2 class="wa-panel-title" id="room-overview-title">ข้อมูลห้อง</h2>
                     <p class="wa-muted small mb-0">ภาพรวมและการเข้าร่วม</p>
                 </div>
-                <i class="bi bi-door-open fs-4 text-success" aria-hidden="true"></i>
+                    @if ($isOwner)
+                        <form method="POST" action="{{ route('rooms.destroy', ['room' => $room]) }}" onsubmit="return confirm('ต้องการลบห้องนี้หรือไม่?')">
+                            @csrf
+                            @method('DELETE')
+                            <div class="d-flex align-items-center">
+                                <button type="submit" class="btn btn-outline-danger mx-3">ลบห้อง</button>
+                                <i class="bi bi-door-open fs-4 text-success" aria-hidden="true"></i>
+                            </div>
+                        </form>
+                    @endif
             </div>
             <dl class="wa-detail-grid mb-3">
                 <div class="wa-detail-field">
@@ -38,7 +48,16 @@
                 <div class="wa-notice mb-3">
                     <div class="fw-semibold mb-1"><i class="bi bi-shield-check me-1" aria-hidden="true"></i> คุณเป็นเจ้าของห้อง</div>
                     <div class="small mb-2">ส่งรหัสเชิญให้ผู้ที่ต้องการเข้าร่วมห้อง</div>
-                    <code class="d-inline-block fs-5 text-success bg-white border rounded-3 px-3 py-2 user-select-all">{{ $room->join_code }}</code>
+                    <div class="d-flex justify-content-between">
+                        <code class="d-inline-block fs-5 text-success bg-white border rounded-3 px-3 py-2 user-select-all">{{ $room->join_code }}</code>
+                        <button class="btn border btn-outline-success"
+                            value="{{$room->join_code}}"
+                            id="join-code" readonly
+                            onclick="navigator.clipboard.writeText(document.getElementById('join-code').value)"
+                            >
+                            คัดลอก
+                        </button>
+                    </div>
                 </div>
                 <a class="btn btn-success" href="{{ route('rooms.rounds.create', $room) }}">
                     <i class="bi bi-plus-circle me-1" aria-hidden="true"></i> สร้างรอบนัดหมาย
