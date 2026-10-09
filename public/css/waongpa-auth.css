@@ -1,0 +1,16 @@
+/* Login/Register shared Waongpa V3 presentation. Keeps Fortify/Livewire form behavior. */
+.auth-theme, .auth-theme body { color-scheme: light; }
+.auth-page { background: #f0f2f5 !important; color: #21392e; }
+.auth-theme .auth-logo { background: #e5f0e9; color: #26784d; font-weight: 700; font-size: 1.45rem; letter-spacing: -.02em; }
+.auth-brand { color: #2f855a; font-size: 1.15rem; letter-spacing: -.02em; font-weight: 700; }
+.auth-theme .auth-card { background: white !important; border: 1px solid #dce2e4 !important; box-shadow: 0 16px 40px rgba(28,43,38,.07) !important; border-radius: 20px; }
+.auth-theme [data-flux-field] { gap: .45rem; }
+.auth-theme input[data-flux-control] { border: 1px solid #d5dfe0 !important; background: #fff; border-radius: 10px; min-height: 44px; box-shadow: none; }
+.auth-theme input[data-flux-control]:focus { border-color: #579a71 !important; box-shadow: 0 0 0 .2rem rgba(47,133,90,.13) !important; }
+.auth-theme input[data-flux-control][data-invalid] { border: 1px solid #bf394b !important; }
+.auth-theme button[type="submit"] { min-height: 45px; border-radius: 10px; }
+.auth-theme a { color: #247149; }
+.auth-theme a:hover { color: #185639; }
+.auth-theme [data-flux-label],.auth-theme label { font-weight: 500; }
+.auth-theme .auth-card > div { min-width: 0; }
+@media (max-width: 480px) { .auth-page .auth-card { padding: 1.25rem !important; } }

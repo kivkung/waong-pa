@@ -1,0 +1,41 @@
+/* UI only. Scoped to Create/Join pages, preserving backend actions and form fields. */
+body:has(.waongpa-room-page) { background: #f0f2f5; }
+.waongpa-room-page { --wr-ink:#21392e; --wr-muted:#516760; --wr-primary:#2f855a; max-width:1100px; margin:0 auto; color:var(--wr-ink); }
+.wr-topline { display:flex; justify-content:space-between; align-items:center; gap:1rem; margin-bottom:1.55rem; }
+.wr-back { font-size:.94rem; color:#27784e; text-decoration:none; }
+.wr-back:hover { text-decoration:underline; }
+.wr-eyebrow { font-size:.73rem; color:#668877; letter-spacing:.1em; font-weight:600; }
+.wr-heading { display:flex; justify-content:space-between; align-items:center; gap:1.5rem; margin-bottom:2rem; }
+.wr-kicker { color:#2e8558; font-size:.85rem; font-weight:600; }
+.wr-heading h1 { font-size:clamp(1.8rem,3vw,2.4rem); font-weight:700; letter-spacing:-.025em; margin:.35rem 0 .5rem; }
+.wr-heading p { color:var(--wr-muted); line-height:1.7; margin:0; }
+.wr-heading-icon { width:66px; height:66px; flex:0 0 66px; border-radius:20px; display:grid; place-items:center; background:#e7f0e9; color:#338052; font-size:1.65rem; }
+.wr-form-layout,.wr-join-layout { display:grid; grid-template-columns:minmax(0,1.55fr) minmax(280px,.9fr); gap:1.2rem; align-items:start; }
+.wr-panel { min-width:0; background:#fff; border:1px solid #dce2e4; border-radius:20px; padding:clamp(1.15rem,2.5vw,2rem); box-shadow:0 12px 30px rgba(28,43,38,.055),0 1px 3px rgba(28,43,38,.025); }
+.wr-section-head { display:flex; align-items:center; gap:.8rem; margin-bottom:1.65rem; }
+.wr-section-head h2 { font-size:1.23rem; margin:0 0 .2rem; font-weight:600; }
+.wr-section-head p { font-size:.88rem; color:var(--wr-muted); margin:0; }
+.wr-icon { display:grid; place-items:center; width:42px; height:42px; flex:0 0 42px; border-radius:13px; color:#2f855a; background:#e7f0e9; }
+.wr-form .form-label { font-size:.95rem; font-weight:600; margin-bottom:.5rem; }
+.wr-required { color:#d14b57; }
+.wr-optional { color:#6f8278; font-weight:400; font-size:.85rem; }
+.wr-form .form-control,.wr-form .form-select { border-color:#d4dddc; border-radius:10px; padding:.7rem .85rem; min-height:47px; background:#fff; }
+.wr-form .form-control:focus,.wr-form .form-select:focus { border-color:#5d9b74; box-shadow:0 0 0 .2rem #5d9b7425; }
+.wr-form textarea.form-control { min-height:118px; resize:vertical; }
+.wr-field-help { font-size:.84rem; color:#657a70; line-height:1.6; margin:.7rem 0 0; }
+.wr-field-help i { color:#388157; margin-right:.25rem; }
+.wr-actions { display:flex; flex-wrap:wrap; gap:.7rem; padding-top:.35rem; }
+.wr-primary { background:var(--wr-primary); border-color:var(--wr-primary); font-weight:600; border-radius:10px; padding:.7rem 1.4rem; min-height:46px; }
+.wr-primary:hover { background:#267348; border-color:#267348; }
+.wr-secondary { border-radius:10px; padding:.7rem 1.2rem; min-height:46px; }
+.wr-info-card { background:#f7f9fa; border:1px solid #dce4e5; border-radius:18px; padding:1.5rem; }
+.wr-side-icon { width:46px; height:46px; display:grid; place-items:center; border-radius:14px; background:#e7f0e9; color:#2f855a; font-size:1.3rem; margin-bottom:1.1rem; }
+.wr-info-card h2 { font-size:1.08rem; font-weight:600; margin-bottom:.6rem; }
+.wr-info-card p { font-size:.9rem; line-height:1.8; color:var(--wr-muted); margin-bottom:1.35rem; }
+.wr-mini-step { display:flex; gap:.8rem; align-items:baseline; font-size:.86rem; color:#40584c; padding:.65rem 0; border-top:1px solid #e3e9e7; }
+.wr-mini-step span { color:#318657; font-size:.79rem; font-weight:700; }
+.wr-note { padding:.85rem; background:#fff; border:1px solid #e2e8e7; border-radius:11px; color:#516b5f; line-height:1.65; font-size:.85rem; }
+.wr-note i { color:#2f855a; margin-right:.3rem; }
+.wr-code-input { letter-spacing:.035em; }
+@media(max-width:850px) { .wr-form-layout,.wr-join-layout { grid-template-columns:1fr; } }
+@media(max-width:575px) { .wr-heading-icon,.wr-eyebrow { display:none; } .wr-actions .btn { flex:1 1 100%; } .wr-heading { margin-bottom:1.4rem; } .wr-topline { margin-bottom:1.15rem; } .wr-side { order:2; } }

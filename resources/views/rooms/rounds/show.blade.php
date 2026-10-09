@@ -1,197 +1,113 @@
 @extends('layouts.rooms')
-
-@section('title', 'รายละเอียดรอบ')
-
+@section('title', 'รายละเอียดรอบนัดหมาย')
 @section('content')
-
-    <div class="alert alert-info">
-        ปิดรับสมาชิก: {{ $round->review_starts_at->format('d/m/Y H:i') }}
-        · ระบบเริ่มดึงสำเนาได้ตั้งแต่ {{ $round->snapshotDueAt()->format('d/m/Y H:i') }} (ตรวจทุกนาที)
-        <p class="mb-0">เข้ารอบหมายถึงยินยอมให้ระบบใช้เวลาไม่ว่างของคุณโดยอัตโนมัติ</p>
+<div class="wa-page">
+    <div class="wa-page-header">
+        <div>
+            <a class="wa-back" href="{{ route('rooms.show', compact('room')) }}"><i class="bi bi-arrow-left me-1" aria-hidden="true"></i>กลับห้อง</a>
+            <div class="wa-kicker mt-3">{{ $room->name }}</div>
+            <h1>รอบนัดหมายที่ {{ $round->round_no }}</h1>
+            <p>ดูเงื่อนไข รอบเวลา และสถานะการเข้าร่วมของสมาชิก</p>
+        </div>
+        <span class="badge {{ $round->status === 'active' ? 'text-bg-primary' : ($round->status === 'cancelled' ? 'text-bg-danger' : 'text-bg-secondary') }} align-self-start mt-2">
+            {{ $round->status === 'active' ? 'กำลังดำเนินการ' : ($round->status === 'cancelled' ? 'ยกเลิกแล้ว' : $round->status) }}
+        </span>
+    </div>
+    <div class="wa-notice mb-4">
+        <i class="bi bi-info-circle me-1" aria-hidden="true"></i>
+        ปิดรับสมาชิก {{ $round->review_starts_at->format('d/m/Y H:i') }} น. · ระบบเริ่มดึงสำเนาเวลาไม่ว่างได้ตั้งแต่ {{ $round->snapshotDueAt()->format('d/m/Y H:i') }} น. (ตรวจทุกนาที)
+        <div class="small mt-1">การเข้าร่วมรอบหมายถึงยินยอมให้ระบบใช้เฉพาะช่วงเวลาที่ไม่ว่างของคุณโดยอัตโนมัติ</div>
+    </div>
+    <div class="wa-grid mb-4">
+        <section class="wa-panel" aria-labelledby="round-detail-title">
+            <h2 class="wa-panel-title" id="round-detail-title">รายละเอียดรอบ</h2>
+            <p class="wa-muted small">เงื่อนไขที่กำหนดไว้สำหรับรอบนัดหมายนี้</p>
+            <dl class="wa-detail-grid mb-0">
+                <div class="wa-detail-field"><dt>ห้อง</dt><dd>{{ $room->name }}</dd></div>
+                <div class="wa-detail-field"><dt>สถานะ</dt><dd>{{ $round->status }}</dd></div>
+                <div class="wa-detail-field"><dt>วันที่ค้นหา</dt><dd>{{ $round->search_start_date->format('d/m/Y') }} – {{ $round->search_end_date->format('d/m/Y') }}</dd></div>
+                <div class="wa-detail-field"><dt>เวลาในแต่ละวัน</dt><dd>{{ substr($round->daily_start_time, 0, 5) }} – {{ substr($round->daily_end_time, 0, 5) }}</dd></div>
+                <div class="wa-detail-field"><dt>ระยะเวลานัด</dt><dd>{{ $round->duration_minutes }} นาที</dd></div>
+                <div class="wa-detail-field"><dt>ขั้นตอนปัจจุบัน</dt><dd>{{ ['join' => 'รับสมาชิก', 'review' => 'ตรวจข้อมูล', 'voting' => 'โหวต', 'final' => 'สรุปผล'][$round->phase] ?? $round->phase }}</dd></div>
+                <div class="wa-detail-field" style="grid-column:1 / -1;"><dt>เงื่อนไขอาจารย์</dt><dd>@if ($round->professor_rule === 'all') อาจารย์ทุกคนในรอบ @else อย่างน้อย {{ $round->min_professors }} คน @endif</dd></div>
+            </dl>
+        </section>
+        <aside class="wa-panel" aria-labelledby="round-milestones-title">
+            <h2 class="wa-panel-title" id="round-milestones-title">กำหนดการ</h2>
+            <p class="wa-muted small">เวลาของแต่ละขั้นตอนในรอบ</p>
+            <div class="wa-steps">
+                @foreach ([
+                    'join_starts_at' => 'เริ่มให้เข้าร่วม',
+                    'review_starts_at' => 'ตรวจตัวเลือก',
+                    'voting_starts_at' => 'เริ่มโหวต',
+                    'final_starts_at' => 'สรุปผล',
+                ] as $field => $label)
+                    <div class="wa-step"><span class="wa-step-index"><i class="bi bi-clock" aria-hidden="true"></i></span><span><strong class="d-block">{{ $label }}</strong><span class="wa-muted">{{ $round->$field->format('d/m/Y H:i') }} น.</span></span></div>
+                @endforeach
+            </div>
+        </aside>
     </div>
 
-    <div class="form-page mx-auto gap-1">
-        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
-            <a href="{{ route('rooms.show', compact('room')) }}" class="text-success">← กลับห้อง</a>
-            @auth
-                @if ((int) auth()->id() === (int) $room->owner_id && $round->status === 'active')
-                    <a href="{{ route('rooms.rounds.reset.edit', [$room, $round]) }}"
-                        class="btn btn-outline-warning mb-3">รีเซ็ตรอบกลับ
-                        Join</a>
-                @endif
-            @endauth
+    <section class="wa-panel mb-4" aria-labelledby="round-actions-title">
+        <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap mb-3">
+            <div><h2 class="wa-panel-title mb-1" id="round-actions-title">การเข้าร่วมรอบ</h2><p class="wa-muted small mb-0">ตรวจสถานะและจัดการข้อมูลตารางเวลาของคุณ</p></div>
+            <i class="bi bi-person-check fs-4 text-success" aria-hidden="true"></i>
         </div>
-
-        <h1 class="mt-3">รอบที่ {{ $round->round_no }}</h1>
-
-        <h2 class="h5 mt-3">ข้อมูลทั่วไป</h2>
-
-        <dl class="row ">
-            <dt class="col-sm-4">ห้อง</dt>
-            <dd class="col-sm-8">{{ $room->name }}</dd>
-
-            <dt class="col-sm-4">สถานะ</dt>
-            <dd class="col-sm-8">{{ $round->status }}</dd>
-
-            <dt class="col-sm-4">ช่วงวันที่ค้นหา</dt>
-            <dd class="col-sm-8">
-                {{ $round->search_start_date->format('d/m/Y') }}
-                –
-                {{ $round->search_end_date->format('d/m/Y') }}
-            </dd>
-
-            <dt class="col-sm-4">เวลาในแต่ละวัน</dt>
-            <dd class="col-sm-8">
-                {{ substr($round->daily_start_time, 0, 5) }}
-                –
-                {{ substr($round->daily_end_time, 0, 5) }}
-            </dd>
-
-            <dt class="col-sm-4">ระยะเวลานัด</dt>
-            <dd class="col-sm-8">{{ $round->duration_minutes }} นาที</dd>
-
-            <dt class="col-sm-4">เงื่อนไขอาจารย์</dt>
-            <dd class="col-sm-8">
-                @if ($round->professor_rule === 'all')
-                    อาจารย์ทุกคนในรอบ
-                @else
-                    อย่างน้อย {{ $round->min_professors }} คน
-                @endif
-            </dd>
-
-            <dt class="col-sm-4">เฟสปัจจุบัน</dt>
-            <dd class="col-sm-8">{{ $round->phase }}</dd>
-        </dl>
-
-        <h2 class="h5">กำหนดเวลาแต่ละเฟส</h2>
-
-        <dl class="row">
-            @foreach ([
-                    'join_starts_at' => 'เปิดรับข้อมูล (Join)',
-                    'review_starts_at' => 'ตรวจตัวเลือก (Review)',
-                    'voting_starts_at' => 'เริ่มโหวต (Voting)',
-                    'final_starts_at' => 'สรุปผล (Final)',
-                ] as $field => $label)
-                <dt class="col-sm-4">{{ $label }}</dt>
-                <dd class="col-sm-8">
-                    {{ $round->$field->format('d/m/Y H:i') }}
-                </dd>
-            @endforeach
-        </dl>
-
-        <dl>
-            <h2 class="h5">log</h2>
-            @if ($round->snapshot_taken_at)
-            <div class="row text-secondary">
-                <p>ข้อมูลนี้ถูกดึงเมื่อ {{ $round->snapshot_taken_at->format('d/m/Y H:i') }}</p>
-            </div>
-            @elseif ($round->phase !== 'join' || now()->gte($round->review_starts_at))
-            <div class="row text-secondary">
-                    <p>กำลังรวบรวมตาราง</p>
-                </div>
-            @endif
-        </dl>
-
+        @if ($round->snapshot_taken_at)
+            <div class="wa-stat mb-3"><i class="bi bi-check-circle-fill" aria-hidden="true"></i><span>ดึงข้อมูลเวลาไม่ว่างแล้ว เมื่อ {{ $round->snapshot_taken_at->format('d/m/Y H:i') }} น.</span></div>
+        @elseif ($round->phase !== 'join' || now()->gte($round->review_starts_at))
+            <div class="wa-notice mb-3">กำลังรวบรวมตารางเวลา</div>
+        @endif
         @auth
-            <div class="row">
-                <a href="{{ route('activities.index') }}" class="btn btn-success mb-3">จัดการกิจกรรมส่วนตัว</a>
-            </div>
+            <div class="mb-3"><a href="{{ route('activities.index') }}" class="btn btn-outline-success"><i class="bi bi-calendar-week me-1" aria-hidden="true"></i>ตารางของฉัน</a></div>
         @endauth
-
-        <p class="small text-secondary">
-            ระบบปิด Join อัตโนมัติตามกำหนด และดึงเวลาไม่ว่างหลังระยะรอที่แสดงด้านบน
-        </p>
-
-        @if ($hasJoined && $round->status === "active")
-            <p class="text-success">
-                คุณเข้าร่วมรอบนี้แล้ว
-            </p>
+        @if ($hasJoined && $round->status === 'active')
+            <div class="wa-stat"><i class="bi bi-check-circle" aria-hidden="true"></i><span>คุณเข้าร่วมรอบนี้แล้ว</span></div>
         @elseif ($canJoin)
-            <form method="POST" action="{{ route('rooms.rounds.members.store', [
-                'room' => $room,
-                'round' => $round,
-            ]) }}" class="d-flex justify-content-center">
+            <form method="POST" action="{{ route('rooms.rounds.members.store', ['room' => $room, 'round' => $round]) }}">
                 @csrf
-                <button type="submit" class="btn btn-success w-100">
-                    เข้าร่วมรอบนี้
-                </button>
+                <button type="submit" class="btn btn-success"><i class="bi bi-box-arrow-in-right me-1" aria-hidden="true"></i>เข้าร่วมรอบนี้</button>
             </form>
         @elseif ($round->status !== 'cancelled')
-            <p class="text-secondary">
-                <b>ไม่สามารถเข้าร่วมได้</b> กรุณาตรวจสอบช่วงเวลาเปิดรับ
-                และสถานะสมาชิกห้อง
-            </p>
+            <p class="wa-muted mb-0">ไม่สามารถเข้าร่วมได้ กรุณาตรวจสอบช่วงเวลาเปิดรับและสถานะสมาชิกห้อง</p>
         @endif
-
         @if ($round->cancelled_at)
-            <p>
-                ยกเลิกเมื่อ:
-                {{ $round->cancelled_at->format('d/m/Y H:i') }}
-            </p>
+            <p class="wa-muted small mt-3 mb-0">ยกเลิกเมื่อ {{ $round->cancelled_at }}</p>
         @endif
-
         @auth
-            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
-                @if (((int) auth()->id() === (int) $room->owner_id) && ($round->status === "active"))
-                    <a href="{{ route('rooms.rounds.members.edit', [$room, $round]) }}" class="btn 
-                                                            @if ($round->status === "active")
-                                                                btn-outline-secondary
-                                                            @else
-                                                                btn-outline-warning
-                                                            @endif
-                                                            my-3">แก้ไขสมาชิกในรอบ</a>
-                @endif
-                @if ((int) auth()->id() === (int) $room->owner_id && $round->status === 'active')
-                    <form method="POST" action="{{ route('rooms.rounds.cancel', ['room' => $room, 'round' => $round]) }}"
-                        onsubmit="return confirm('ต้องการยกเลิกรอบนี้หรือไม่?')">
+            @if ((int) auth()->id() === (int) $room->owner_id && $round->status === 'active')
+                <hr class="my-4">
+                <h3 class="h6 fw-semibold">เครื่องมือเจ้าของห้อง</h3>
+                <div class="wa-action-row mt-3">
+                    <a href="{{ route('rooms.rounds.members.edit', [$room, $round]) }}" class="btn btn-outline-success">แก้ไขสมาชิกในรอบ</a>
+                    <a href="{{ route('rooms.rounds.reset.edit', [$room, $round]) }}" class="btn btn-outline-secondary">รีเซ็ตรอบกลับขั้นตอนเข้าร่วม</a>
+                    <form method="POST" action="{{ route('rooms.rounds.cancel', ['room' => $room, 'round' => $round]) }}" onsubmit="return confirm('ต้องการยกเลิกรอบนี้หรือไม่?')">
                         @csrf
                         @method('PATCH')
-
-                        <button type="submit" class="btn btn-outline-danger">
-                            ยกเลิกรอบ
-                        </button>
+                        <button type="submit" class="btn btn-outline-danger">ยกเลิกรอบ</button>
                     </form>
-                @endif
-            </div>
-        @endauth
-
-        @if ($roundMembers !== null)
-            <section class="card rounded-4 p-4 mt-4">
-                <h2 class="h5">
-                    สมาชิกในรอบ ({{ $roundMembers->total() }})
-                </h2>
-
-                <ul class="list-group list-group-flush">
-                    @forelse ($roundMembers as $roundMember)
-                        <li class="list-group-item px-0 py-3">
-                            <div class="fw-semibold">
-                                {{ $roundMember->roomMember->user->name }}
-                            </div>
-
-                            <div class="small text-secondary">
-                                {{ $roundMember->role === 'professor' ? 'อาจารย์' : 'นักศึกษา' }}
-                                · น้ำหนัก {{ $roundMember->weight }}
-                            </div>
-
-                            <div class="small text-secondary">
-                                เข้าร่วมเมื่อ
-                                {{ $roundMember->joined_at->format('d/m/Y H:i') }}
-                            </div>
-
-                            @include('rooms.rounds.busy-periods', ['participant' => $roundMember])
-                        </li>
-                    @empty
-                        <li class="list-group-item px-0 text-secondary">
-                            ยังไม่มีสมาชิกเข้าร่วมรอบนี้
-                        </li>
-                    @endforelse
-                </ul>
-
-                <div class="mt-3">
-                    {{ $roundMembers->links('pagination::bootstrap-5') }}
                 </div>
-            </section>
-        @endif
-    </div>
+            @endif
+        @endauth
+    </section>
 
+    @if ($roundMembers !== null)
+        <section class="wa-panel" aria-labelledby="round-members-title">
+            <h2 class="wa-panel-title mb-1" id="round-members-title">สมาชิกในรอบ ({{ $roundMembers->total() }})</h2>
+            <p class="wa-muted small">แสดงช่วงเวลาที่ไม่ว่างตามเงื่อนไขและขั้นตอนปัจจุบัน</p>
+            @forelse ($roundMembers as $roundMember)
+                <div class="wa-member-row align-items-start">
+                    <div class="w-100">
+                        <div class="fw-semibold account-name">{{ $roundMember->roomMember->user->name }}</div>
+                        <div class="wa-muted small mt-1">{{ $roundMember->role === 'professor' ? 'อาจารย์' : 'นักศึกษา' }} · น้ำหนัก {{ $roundMember->weight }} · เข้าร่วมเมื่อ {{ $roundMember->joined_at->format('d/m/Y H:i') }}</div>
+                        <div class="mt-2">@include('rooms.rounds.busy-periods', ['participant' => $roundMember])</div>
+                    </div>
+                </div>
+            @empty
+                <p class="wa-muted mb-0">ยังไม่มีสมาชิกเข้าร่วมรอบนี้</p>
+            @endforelse
+            <div class="mt-3">{{ $roundMembers->links('pagination::bootstrap-5') }}</div>
+        </section>
+    @endif
+</div>
 @endsection
