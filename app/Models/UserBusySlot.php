@@ -57,7 +57,7 @@ class UserBusySlot extends Model
     public static function periodsFor(MeetingRound $round, int $userId): array
     {
         $periods = [];
-        foreach (self::query    ()->where('user_id', $userId)->overlappingRound($round)->orderBy('start_at')->get() as $activity) {
+        foreach (self::query()->where('user_id', $userId)->overlappingRound($round)->orderBy('start_at')->get() as $activity) {
             foreach (self::windows($round) as $window) {
                 $start = $activity->start_at->max($window['start_at']);
                 $end = $activity->end_at->min($window['end_at']);
