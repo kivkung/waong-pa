@@ -91,6 +91,8 @@
         @endauth
     </section>
 
+    @include('rooms.rounds.voting')
+
     @if ($roundMembers !== null)
         <section class="wa-panel" aria-labelledby="round-members-title">
             <h2 class="wa-panel-title mb-1" id="round-members-title">สมาชิกในรอบ ({{ $roundMembers->total() }})</h2>

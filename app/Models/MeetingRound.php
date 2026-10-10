@@ -27,6 +27,7 @@ class MeetingRound extends Model
             'final_starts_at' => 'immutable_datetime',
             'cancelled_at' => 'immutable_datetime',
             'snapshot_taken_at' => 'immutable_datetime',
+            'candidates_generated_at' => 'immutable_datetime',
         ];
     }
 
@@ -45,6 +46,12 @@ class MeetingRound extends Model
     public function snapshotDueAt(): CarbonImmutable
     {
         return $this->review_starts_at->addMinutes(config('rounds.snapshot_delay_minutes'));
+    }
+
+    /** @return HasMany<RoundCandidate, $this> */
+    public function candidates(): HasMany
+    {
+        return $this->hasMany(RoundCandidate::class);
     }
 
     public function membershipLocked(): bool

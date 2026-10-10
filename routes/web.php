@@ -6,6 +6,7 @@ use App\Http\Controllers\RoomMemberController;
 use App\Http\Controllers\RoundController;
 use App\Http\Controllers\RoundMemberController;
 use App\Http\Controllers\RoundResetController;
+use App\Http\Controllers\RoundVotingController;
 use App\Http\Controllers\UserBusySlotController;
 use Illuminate\Support\Facades\Route;
 
@@ -14,6 +15,10 @@ Route::get('/', [PublicDashboardController::class, 'index'])->name('home');
 Route::get('/dashboard', [PublicDashboardController::class, 'index'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
+    Route::post('/rooms/{room}/rounds/{round}/votes', [RoundVotingController::class, 'store'])
+        ->whereNumber('round')->name('rooms.rounds.votes.store');
+    Route::get('/rooms/{room}/rounds/{round}/calendar', [RoundVotingController::class, 'calendar'])
+        ->whereNumber('round')->name('rooms.rounds.calendar');
     Route::get('/activities', [UserBusySlotController::class, 'index'])->name('activities.index');
     Route::post('/activities', [UserBusySlotController::class, 'store'])->name('activities.store');
     Route::get('/activities/{activity}/edit', [UserBusySlotController::class, 'edit'])->whereNumber('activity')->name('activities.edit');

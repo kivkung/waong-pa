@@ -10,3 +10,4 @@
 @fonts
 @vite(['resources/css/app.css', 'resources/js/app.js'])
 @fluxAppearance
+<link rel="stylesheet" href="{{ asset('css/no-motion.css') }}">

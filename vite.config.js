@@ -10,8 +10,6 @@ export default defineConfig({
                 'resources/css/app.css',
                 'resources/js/app.js',
                 'resources/js/passkeys.js',
-                'resources/css/lecture-chair.css',
-                'resources/js/lecture-chair.js',
             ],
             refresh: true,
             fonts: [

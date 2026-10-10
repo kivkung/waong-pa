@@ -17,16 +17,16 @@
         .room-description { white-space: pre-line; overflow-wrap: anywhere; }
         .card-title, .account-name { overflow-wrap: anywhere; }
         .form-page { max-width: 680px; }
-        .transition-card { transition: box-shadow 0.5s ease, transform 0.3s ease; }
         .round-card { position: relative; z-index: 1; background: transparent !important; }
-        .round-card::before { content: ''; position: absolute; inset: 0; background: #fff; border-top: 1px solid rgba(0,0,0,.125); border-bottom: 1px solid rgba(0,0,0,.125); border-radius: 0; z-index: -1; transition: box-shadow .2s ease; }
-        .round-card:hover::before, .round-card:focus-within::before { box-shadow: var(--bs-box-shadow); transform: scaleX(1.02); }
-        .room-card:hover, .room-card:focus-within { box-shadow: var(--bs-box-shadow); transform: rotate(2deg); }
+        .round-card::before { content: ''; position: absolute; inset: 0; background: #fff; border-top: 1px solid rgba(0,0,0,.125); border-bottom: 1px solid rgba(0,0,0,.125); border-radius: 0; z-index: -1; }
+        .round-card:hover::before, .round-card:focus-within::before { box-shadow: var(--bs-box-shadow); }
+        .room-card:hover, .room-card:focus-within { box-shadow: var(--bs-box-shadow); }
         .pagination { --bs-pagination-color:#198754; --bs-pagination-hover-color:#146c43; --bs-pagination-hover-bg:#d1e7dd; --bs-pagination-active-bg:#198754; --bs-pagination-active-border-color:#198754; --bs-pagination-focus-box-shadow:0 0 0 .25rem rgba(25,135,84,.25); }
     </style>
     {{-- Global UI presentation layer. Business logic stays in existing controllers/routes. --}}
     <link rel="stylesheet" href="{{ asset('css/waongpa-theme.css') }}">
     @stack('styles')
+    <link rel="stylesheet" href="{{ asset('css/no-motion.css') }}">
 </head>
 <body class="d-flex flex-column min-vh-100">
     @include('partials.header')

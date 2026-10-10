@@ -2,8 +2,13 @@
 
 namespace App\Models;
 
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property CarbonImmutable $start_at
+ * @property CarbonImmutable $end_at
+ */
 class RoundMemberBusyPeriod extends Model
 {
     public $timestamps = false;
