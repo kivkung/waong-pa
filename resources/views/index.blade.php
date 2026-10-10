@@ -1,15 +1,9 @@
 @extends('layouts.rooms')
 @section('title', 'Dashboard')
-@push('styles')
-    @vite('resources/css/lecture-chair.css')
-@endpush
-@push('scripts')
-    @vite('resources/js/lecture-chair.js')
-@endpush
 @section('content')
-    {{-- Idle delay in milliseconds: 1000 = 1 second (preview), 90000 = 1.5 minutes. --}}
-    <section class="hero lecture-hero rounded-4 p-4 p-md-5 mb-5" data-lecture-hero data-chair-idle-ms="20000">
-        <div class="lecture-hero-copy">
+    <section class="hero rounded-4 p-4 p-md-5 mb-5">
+        <div class="row align-items-center g-4">
+            <div class="col-md-7">
             <p class="text-success fw-semibold">WAONGPA / ROOMS</p>
             <h1 class="display-6 fw-bold">นัดหมายให้ลงตัว เริ่มจากห้องของคุณ</h1>
             <p class="text-secondary mb-4">ดูห้องสาธารณะได้ทันที หรือเข้าสู่ระบบเพื่อสร้างและเข้าร่วมห้อง</p>
@@ -19,32 +13,12 @@
             @else
                 <a class="btn btn-success" href="{{ route('login') }}">เข้าสู่ระบบ</a>
             @endauth
-        </div>
-        <div class="lecture-scene">
-            <span class="lecture-seat-label"><span></span> มีที่ให้คุณเสมอ</span>
-            <div class="lecture-chair-motion" data-lecture-chair>
-                @include('partials.lecture-chair')
             </div>
-            <div class="lecture-scene-caption">
-                <span class="lecture-seat-number">SEAT / 01</span>
-                <p>ขยับเมาส์ แล้วทักเก้าอี้ตัวนี้ดู</p>
-                <button class="lecture-preview" type="button" data-chair-preview hidden>ลองเรียกเก้าอี้ <span aria-hidden="true">↗</span></button>
+            <div class="col-md-5 text-center">
+                @include('partials.lecture-chair')
             </div>
         </div>
     </section>
-
-    <aside class="lecture-dialog" data-chair-dialog aria-labelledby="chair-dialog-title" hidden>
-        <div class="lecture-dialog-card">
-            <button class="lecture-dialog-close" type="button" aria-label="ปิดข้อความ" data-chair-dismiss>×</button>
-            <div class="lecture-dialog-chair" aria-hidden="true">@include('partials.lecture-chair')</div>
-            <div class="lecture-dialog-copy">
-                <p class="lecture-dialog-eyebrow">A SEAT FOR YOU</p>
-                <h2 id="chair-dialog-title" role="status">ว่างป่ะ ตรงนี้ว่างนะ</h2>
-                <p id="chair-dialog-description">มีที่ให้เสมอ พร้อมเมื่อไหร่ค่อยมา</p>
-                <button class="lecture-dialog-reply" type="button" data-chair-dismiss>โอเค ไว้เจอกัน <span aria-hidden="true">↗</span></button>
-            </div>
-        </div>
-    </aside>
 
     @auth
         <section class="mb-5" aria-labelledby="my-rooms-heading">

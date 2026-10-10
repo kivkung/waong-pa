@@ -33,6 +33,8 @@ class RoundResetController extends Controller
             $round->min_professors = $validated['professor_rule'] === 'all' ? null : $validated['min_professors'];
             $round->phase = 'join';
             $round->snapshot_taken_at = null;
+            $round->candidates_generated_at = null;
+            $round->candidates()->delete();
             foreach ($round->members()->get() as $member) {
                 $member->busyPeriods()->delete();
             }

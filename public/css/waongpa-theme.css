@@ -11,7 +11,7 @@
     --wa-muted: #536861;
     --wa-shadow: 0 13px 34px rgba(28, 43, 38, .055), 0 1px 2px rgba(28,43,38,.025);
 }
-html { scroll-behavior: smooth; }
+html { scroll-behavior: auto; }
 body { background: var(--wa-bg); color: var(--wa-ink); font-family: Kanit, sans-serif; }
 ::selection { background: #bfdcc6; color: #123522; }
 body > header.bg-white { background: white !important; border-color: #e2e7e9 !important; }
@@ -19,7 +19,7 @@ body > header .navbar { padding: .78rem 0 !important; }
 body > header .navbar > .container { max-width: 1160px; }
 body > header .navbar-brand { font-size: 1.13rem; letter-spacing: -.02em; color: var(--wa-green) !important; margin-right: 1.5rem; }
 body > header .navbar-nav { gap: .35rem !important; align-items: center; }
-body > header .navbar-nav .nav-link { color: #40574d; border-radius: 10px; padding: .55rem .86rem; line-height: 1.4; transition: background .15s, color .15s; }
+body > header .navbar-nav .nav-link { color: #40574d; border-radius: 10px; padding: .55rem .86rem; line-height: 1.4; }
 body > header .navbar-nav .nav-link:hover { background: #f1f6f3; color: var(--wa-green-deep); }
 body > header .navbar-nav .nav-link[aria-current="page"] { color: var(--wa-green-deep) !important; background: #eaf3ed; font-weight: 600; }
 body > header .account-name { font-size: .87rem; font-weight: 500; }
@@ -29,7 +29,7 @@ body > footer.container { width: calc(100% - 2rem); max-width: 1180px; border-co
 a { color: var(--wa-green-deep); }
 a:hover { color: #145436; }
 a:focus-visible, button:focus-visible, [role="button"]:focus-visible { outline: 3px solid #85b99d; outline-offset: 3px; }
-.btn { border-radius: 10px; font-weight: 500; padding: .56rem 1rem; transition: background .15s, border-color .15s, box-shadow .15s; }
+.btn { border-radius: 10px; font-weight: 500; padding: .56rem 1rem; }
 .btn-success { background: var(--wa-green); border-color: var(--wa-green); }
 .btn-success:hover, .btn-success:focus { background: var(--wa-green-deep); border-color: var(--wa-green-deep); }
 .btn-outline-success { color: var(--wa-green-deep); border-color: #92baa1; }
@@ -59,15 +59,14 @@ textarea.form-control { min-height: 110px; }
 .text-bg-primary { background: #e6efff !important; color: #365eaa !important; }
 .text-bg-warning { background: #fff3d8 !important; color: #806015 !important; }
 .text-bg-danger { background: #fde9eb !important; color: #ac3344 !important; }
-.room-card { overflow: hidden; transition: box-shadow .17s ease, transform .17s ease !important; }
-.room-card:hover, .room-card:focus-within { transform: translateY(-3px) !important; box-shadow: 0 16px 34px rgba(29,51,40,.10) !important; }
+.room-card { overflow: hidden; }
+.room-card:hover, .room-card:focus-within { box-shadow: 0 16px 34px rgba(29,51,40,.10) !important; }
 .room-card .card-title { font-weight: 650; line-height: 1.4; margin-bottom: .6rem; }
 .room-description { color: var(--wa-muted); line-height: 1.7; }
 /* Old round row has a visual pseudo background that is too heavy and rotates on hover. */
 .round-card { background: #fff !important; border: 1px solid var(--wa-border) !important; border-radius: 12px !important; margin-top: .35rem; }
 .round-card::before { display: none !important; }
-.round-card:hover::before, .round-card:focus-within::before { transform: none !important; }
-.round-card:hover { background: #f7faf8 !important; transform: translateY(-1px); }
+.round-card:hover { background: #f7faf8 !important; }
 /* Polished structural classes for the more complex existing round pages. */
 .wa-page-header { display: flex; justify-content: space-between; gap: 1rem; align-items: start; margin-bottom: 1.65rem; }
 .wa-page-header h1 { font-size: clamp(1.7rem, 3vw, 2.25rem); font-weight: 700; letter-spacing: -.03em; margin: .35rem 0 .4rem; }
@@ -82,8 +81,8 @@ textarea.form-control { min-height: 110px; }
 .wa-grid { display: grid; grid-template-columns: minmax(0,1.5fr) minmax(270px,.9fr); gap: 1.2rem; align-items: start; }
 .wa-grid-even { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 1.1rem; }
 .wa-side-panel { background: #f8fafb; box-shadow: none; }
-.wa-round-card { display: block; text-decoration: none; color: var(--wa-ink); border: 1px solid #dee5e6; border-radius: 13px; background: #f7f9fa; padding: 1rem 1.1rem; transition: border-color .15s, transform .15s; }
-.wa-round-card:hover { color: var(--wa-ink); border-color: #a7c4b2; transform: translateY(-2px); }
+.wa-round-card { display: block; text-decoration: none; color: var(--wa-ink); border: 1px solid #dee5e6; border-radius: 13px; background: #f7f9fa; padding: 1rem 1.1rem; }
+.wa-round-card:hover { color: var(--wa-ink); border-color: #a7c4b2; }
 .wa-member-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .9rem; padding: 1rem 0; border-bottom: 1px solid #e6ebec; }
 .wa-member-row:last-child { border-bottom: 0; }
 .wa-member-name { font-weight: 650; overflow-wrap: anywhere; }
@@ -122,8 +121,4 @@ textarea.form-control { min-height: 110px; }
     .wa-detail-grid,.wa-input-grid { grid-template-columns: 1fr; }
     .wa-page-header { margin-bottom: 1.1rem; }
     .wa-panel { border-radius: 16px; }
-}
-@media (prefers-reduced-motion: reduce) {
-    html { scroll-behavior: auto; }
-    .room-card,.wa-round-card { transition: none !important; }
 }

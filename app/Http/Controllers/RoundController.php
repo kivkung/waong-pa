@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\ProcessMeetingRound;
 use App\Models\MeetingRound;
 use App\Models\Room;
+use App\Models\RoundVote;
 use App\Rules\RoundParameters;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
@@ -95,6 +97,8 @@ class RoundController extends Controller
         abort_unless($room->visibility === 'public' || $isMember, 404);
 
         $round = $room->rounds()->findOrFail($round);
+        app(ProcessMeetingRound::class)->handle($round->id);
+        $round->refresh();
 
         $hasJoined = false;
 
@@ -123,7 +127,35 @@ class RoundController extends Controller
                 ->paginate(15, ['*'], 'members_page');
         }
 
-        return view('rooms.rounds.show', compact('room', 'round', 'hasJoined', 'canJoin', 'roundMembers'));
+        $participant = null;
+        $selectedCandidateId = null;
+        if ($isMember) {
+            $participant = $round->members()->whereHas('roomMember', function ($query) use ($request) {
+                $query->where('user_id', $request->user()->id);
+            })->first();
+        }
+        if ($participant !== null) {
+            $selectedCandidateId = RoundVote::query()
+                ->where('round_member_id', $participant->id)
+                ->value('round_candidate_id');
+        }
+        $candidates = null;
+        $winner = null;
+        $participantCount = $round->members()->count();
+        if ($isMember && $round->candidates_generated_at !== null) {
+            $query = $round->candidates()->withCount('votes');
+            // ตอนโหวต แสดงเฉพาะเวลาที่สมาชิกคนนี้ว่างจากสำเนาตาราง
+            if ($round->phase === 'voting' && $participant) {
+                $query->whereJsonContains('available_member_ids', $participant->id);
+            }
+            // เรียงจำนวนคนว่างจากมากไปน้อย ถ้าเท่ากันเอาเวลาเร็วขึ้นก่อน
+            $candidates = $query->orderByDesc('available_count')
+                ->orderBy('start_at')
+                ->paginate(12, ['*'], 'candidates_page');
+            $winner = $round->candidates()->withCount('votes')->where('is_winner', true)->first();
+        }
+
+        return view('rooms.rounds.show', compact('room', 'round', 'hasJoined', 'canJoin', 'roundMembers', 'participant', 'selectedCandidateId', 'candidates', 'winner', 'participantCount'));
     }
 
     public function cancel(Request $request, Room $room, int $round): RedirectResponse

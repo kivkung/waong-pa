@@ -5,16 +5,14 @@ use App\Models\RoomMember;
 use App\Models\User;
 use Illuminate\Support\Str;
 
-test('dashboard includes the lecture chair and accessible invitation for guests and members', function () {
+test('dashboard shows room actions for guests and members', function () {
     $this->get(route('dashboard'))->assertOk()
-        ->assertSee('data-lecture-hero', false)
-        ->assertSee('data-chair-preview', false)
-        ->assertSee('aria-labelledby="chair-dialog-title"', false)
-        ->assertSee('ว่างป่ะ ตรงนี้ว่างนะ');
+        ->assertSee('นัดหมายให้ลงตัว เริ่มจากห้องของคุณ')
+        ->assertSee(route('login'));
 
     $this->actingAs(User::factory()->create())->get(route('dashboard'))->assertOk()
-        ->assertSee('data-chair-dialog', false)
-        ->assertSee('ว่างป่ะ ตรงนี้ว่างนะ');
+        ->assertSee(route('rooms.create'))
+        ->assertSee(route('rooms.join'));
 });
 
 function makeRoomForTest(User $owner, string $visibility = 'public'): Room

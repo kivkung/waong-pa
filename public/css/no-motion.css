@@ -1,0 +1,9 @@
+/* ทุกหน้าแสดงผลทันที รวม component จาก Bootstrap และ Flux */
+*,
+*::before,
+*::after,
+*::backdrop {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+}

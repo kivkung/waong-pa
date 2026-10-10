@@ -100,7 +100,6 @@ new class extends Component {
 
         <div
             x-show="showRecoveryCodes"
-            x-transition
             id="recovery-codes-section"
             class="relative overflow-hidden"
             x-bind:aria-hidden="!showRecoveryCodes"
@@ -120,7 +119,7 @@ new class extends Component {
                             <div
                                 role="listitem"
                                 class="select-text"
-                                wire:loading.class="opacity-50 animate-pulse"
+                                wire:loading.class="opacity-50"
                             >
                                 {{ $code }}
                             </div>
