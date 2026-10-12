@@ -1,0 +1,158 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2300" height="2300" viewBox="0 0 2300 2300">
+<rect width="100%" height="100%" fill="#ffffff"/>
+<text x="60" y="64" font-family="Tahoma, sans-serif" font-size="34" fill="#000000">WAONGPA — ER DIAGRAM</text>
+<text x="60" y="108" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">PK = คีย์หลัก   FK = คีย์อ้างอิง   UK = ห้ามซ้ำ   ? = nullable   1 → 0..N = หนึ่งต่อศูนย์หรือหลายรายการ</text>
+<text x="60" y="142" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">อ้างอิง migration ของโปรเจกต์ • ตารางธุรกิจหลัก 9 ตาราง • พื้นหลังขาว / ตัวหนังสือดำ / เส้นดำ</text>
+<polyline points="680,260 840,260" fill="none" stroke="#000000" stroke-width="2"/>
+<text x="700" y="238" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">เจ้าของ</text>
+<text x="686" y="286" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">1</text>
+<text x="775" y="250" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">0..N</text>
+<polyline points="1460,260 1620,260" fill="none" stroke="#000000" stroke-width="2"/>
+<text x="1480" y="238" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">มีรอบ</text>
+<text x="1466" y="286" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">1</text>
+<text x="1555" y="250" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">0..N</text>
+<polyline points="360,578 360,850" fill="none" stroke="#000000" stroke-width="2"/>
+<text x="375" y="725" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">มีกิจกรรม</text>
+<text x="366" y="604" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">1</text>
+<text x="366" y="840" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">0..N</text>
+<polyline points="680,430 755,430 755,960 840,960" fill="none" stroke="#000000" stroke-width="2"/>
+<text x="685" y="690" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">สมาชิกของ</text>
+<text x="686" y="456" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">1</text>
+<text x="775" y="950" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">0..N</text>
+<polyline points="1150,510 1150,850" fill="none" stroke="#000000" stroke-width="2"/>
+<text x="1165" y="730" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">มีสมาชิก</text>
+<text x="1156" y="536" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">1</text>
+<text x="1156" y="840" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">0..N</text>
+<polyline points="1150,1214 1150,1540" fill="none" stroke="#000000" stroke-width="2"/>
+<text x="1165" y="1410" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">เข้าร่วมรอบ</text>
+<text x="1156" y="1240" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">1</text>
+<text x="1156" y="1530" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">0..N</text>
+<polyline points="1620,900 1510,900 1510,1630 1460,1630" fill="none" stroke="#000000" stroke-width="2"/>
+<text x="1525" y="1220" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">มีผู้เข้าร่วม</text>
+<text x="1590" y="926" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">1</text>
+<text x="1466" y="1620" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">0..N</text>
+<polyline points="1930,952 1930,1290" fill="none" stroke="#000000" stroke-width="2"/>
+<text x="1945" y="1140" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">มีตัวเลือก</text>
+<text x="1936" y="978" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">1</text>
+<text x="1936" y="1280" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">0..N</text>
+<polyline points="840,1660 680,1660" fill="none" stroke="#000000" stroke-width="2"/>
+<text x="685" y="1630" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">สำเนาเวลาไม่ว่าง</text>
+<text x="810" y="1686" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">1</text>
+<text x="686" y="1650" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">0..N</text>
+<polyline points="1460,1750 1550,1750 1550,1910 1620,1910" fill="none" stroke="#000000" stroke-width="2"/>
+<text x="1465" y="1830" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">ลงคะแนน</text>
+<text x="1466" y="1776" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">1</text>
+<text x="1555" y="1900" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">0..1</text>
+<polyline points="1930,1620 1930,1860" fill="none" stroke="#000000" stroke-width="2"/>
+<text x="1945" y="1760" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">ได้รับคะแนน</text>
+<text x="1936" y="1646" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">1</text>
+<text x="1936" y="1850" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">0..N</text>
+<rect x="60" y="180" width="620" height="398" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+<text x="76" y="216" font-family="Tahoma, sans-serif" font-size="24" fill="#000000">users</text>
+<polyline points="60,232 680,232" fill="none" stroke="#000000" stroke-width="2"/>
+<text x="76" y="262" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">id [PK] | รหัสผู้ใช้</text>
+<text x="76" y="296" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">name | ชื่อผู้ใช้</text>
+<text x="76" y="330" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">email [UK] | อีเมล</text>
+<text x="76" y="364" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">email_verified_at ? | เวลายืนยันอีเมล</text>
+<text x="76" y="398" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">password | รหัสผ่านที่แฮชแล้ว</text>
+<text x="76" y="432" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">two_factor_secret ? | ข้อมูลยืนยันสองขั้นตอน</text>
+<text x="76" y="466" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">two_factor_recovery_codes ? | รหัสกู้คืน</text>
+<text x="76" y="500" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">two_factor_confirmed_at ? | เวลายืนยัน 2FA</text>
+<text x="76" y="534" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">remember_token ? | โทเคนจดจำการเข้าสู่ระบบ</text>
+<text x="76" y="568" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">created_at, updated_at | เวลาสร้างและแก้ไข</text>
+<rect x="840" y="180" width="620" height="330" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+<text x="856" y="216" font-family="Tahoma, sans-serif" font-size="24" fill="#000000">rooms</text>
+<polyline points="840,232 1460,232" fill="none" stroke="#000000" stroke-width="2"/>
+<text x="856" y="262" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">id [PK] | รหัสห้อง</text>
+<text x="856" y="296" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">owner_id [FK] | เจ้าของ → users.id</text>
+<text x="856" y="330" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">name | ชื่อห้อง</text>
+<text x="856" y="364" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">description ? | รายละเอียดห้อง</text>
+<text x="856" y="398" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">visibility | public / private</text>
+<text x="856" y="432" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">join_code [UK] | รหัสเข้าห้อง 12 ตัว</text>
+<text x="856" y="466" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">created_at, updated_at | เวลาสร้างและแก้ไข</text>
+<text x="856" y="500" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">deleted_at ? | เวลาลบแบบ soft delete</text>
+<rect x="1620" y="180" width="620" height="772" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+<text x="1636" y="216" font-family="Tahoma, sans-serif" font-size="24" fill="#000000">meeting_rounds</text>
+<polyline points="1620,232 2240,232" fill="none" stroke="#000000" stroke-width="2"/>
+<text x="1636" y="262" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">id [PK] | รหัสรอบนัดหมาย</text>
+<text x="1636" y="296" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">room_id [FK] | ห้อง → rooms.id</text>
+<text x="1636" y="330" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">round_no | ลำดับรอบภายในห้อง</text>
+<text x="1636" y="364" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">status | active / completed / cancelled</text>
+<text x="1636" y="398" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">phase | join / review / voting / final</text>
+<text x="1636" y="432" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">active_marker ? | 1 เมื่อ active นอกนั้น NULL</text>
+<text x="1636" y="466" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">search_start_date | วันแรกที่ค้นหาเวลานัด</text>
+<text x="1636" y="500" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">search_end_date | วันสุดท้ายที่ค้นหาเวลานัด</text>
+<text x="1636" y="534" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">daily_start_time | เวลาเริ่มค้นหาแต่ละวัน</text>
+<text x="1636" y="568" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">daily_end_time | เวลาสิ้นสุดค้นหาแต่ละวัน</text>
+<text x="1636" y="602" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">duration_minutes | ระยะเวลานัดเป็นนาที</text>
+<text x="1636" y="636" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">professor_rule | at_least / all</text>
+<text x="1636" y="670" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">min_professors ? | จำนวนอาจารย์ขั้นต่ำ</text>
+<text x="1636" y="704" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">join_starts_at | เวลาเริ่มรับผู้เข้าร่วม</text>
+<text x="1636" y="738" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">review_starts_at | เวลาเริ่มตรวจสอบตาราง</text>
+<text x="1636" y="772" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">voting_starts_at | เวลาเริ่มโหวต</text>
+<text x="1636" y="806" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">final_starts_at | เวลาเริ่มสรุปผล</text>
+<text x="1636" y="840" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">cancelled_at ? | เวลายกเลิกรอบ</text>
+<text x="1636" y="874" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">snapshot_taken_at ? | เวลาบันทึกสำเนาตาราง</text>
+<text x="1636" y="908" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">candidates_generated_at ? | เวลาสร้างตัวเลือก</text>
+<text x="1636" y="942" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">created_at, updated_at | เวลาสร้างและแก้ไข</text>
+<rect x="60" y="850" width="620" height="296" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+<text x="76" y="886" font-family="Tahoma, sans-serif" font-size="24" fill="#000000">user_busy_slots</text>
+<polyline points="60,902 680,902" fill="none" stroke="#000000" stroke-width="2"/>
+<text x="76" y="932" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">id [PK] | รหัสกิจกรรมส่วนตัว</text>
+<text x="76" y="966" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">user_id [FK] | เจ้าของ → users.id</text>
+<text x="76" y="1000" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">name | ชื่อกิจกรรม</text>
+<text x="76" y="1034" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">start_at | เวลาเริ่มไม่ว่าง</text>
+<text x="76" y="1068" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">end_at | เวลาสิ้นสุดไม่ว่าง</text>
+<text x="76" y="1102" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">created_at, updated_at | เวลาสร้างและแก้ไข</text>
+<text x="76" y="1136" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">deleted_at ? | เวลาลบแบบ soft delete</text>
+<rect x="840" y="850" width="620" height="364" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+<text x="856" y="886" font-family="Tahoma, sans-serif" font-size="24" fill="#000000">room_members</text>
+<polyline points="840,902 1460,902" fill="none" stroke="#000000" stroke-width="2"/>
+<text x="856" y="932" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">id [PK] | รหัสสมาชิกห้อง</text>
+<text x="856" y="966" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">room_id [FK] | ห้อง → rooms.id</text>
+<text x="856" y="1000" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">user_id [FK] | ผู้ใช้ → users.id</text>
+<text x="856" y="1034" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">role | student / professor</text>
+<text x="856" y="1068" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">weight | น้ำหนักสมาชิก decimal(6,2)</text>
+<text x="856" y="1102" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">status | active / left / removed</text>
+<text x="856" y="1136" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">joined_at | เวลาเข้าห้อง</text>
+<text x="856" y="1170" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">left_at ? | เวลาออกจากห้อง</text>
+<text x="856" y="1204" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">created_at, updated_at | เวลาสร้างและแก้ไข</text>
+<rect x="1620" y="1290" width="620" height="330" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+<text x="1636" y="1326" font-family="Tahoma, sans-serif" font-size="24" fill="#000000">round_candidates</text>
+<polyline points="1620,1342 2240,1342" fill="none" stroke="#000000" stroke-width="2"/>
+<text x="1636" y="1372" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">id [PK] | รหัสตัวเลือกเวลานัด</text>
+<text x="1636" y="1406" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">meeting_round_id [FK] | → meeting_rounds.id</text>
+<text x="1636" y="1440" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">start_at | เวลาเริ่มนัดที่เสนอ</text>
+<text x="1636" y="1474" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">end_at | เวลาสิ้นสุดนัดที่เสนอ</text>
+<text x="1636" y="1508" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">available_count | จำนวนสมาชิกที่ว่าง</text>
+<text x="1636" y="1542" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">professor_count | จำนวนอาจารย์ที่ว่าง</text>
+<text x="1636" y="1576" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">available_member_ids | JSON รหัส round_members</text>
+<text x="1636" y="1610" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">is_winner | เป็นตัวเลือกที่ชนะหรือไม่</text>
+<rect x="840" y="1540" width="620" height="296" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+<text x="856" y="1576" font-family="Tahoma, sans-serif" font-size="24" fill="#000000">round_members</text>
+<polyline points="840,1592 1460,1592" fill="none" stroke="#000000" stroke-width="2"/>
+<text x="856" y="1622" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">id [PK] | รหัสผู้เข้าร่วมรอบ</text>
+<text x="856" y="1656" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">meeting_round_id [FK] | → meeting_rounds.id</text>
+<text x="856" y="1690" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">room_member_id [FK] | → room_members.id</text>
+<text x="856" y="1724" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">role | บทบาทที่ใช้ในรอบ</text>
+<text x="856" y="1758" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">weight | น้ำหนักในรอบ decimal(6,2)</text>
+<text x="856" y="1792" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">joined_at | เวลาเข้าร่วมรอบ</text>
+<text x="856" y="1826" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">created_at, updated_at | เวลาสร้างและแก้ไข</text>
+<rect x="60" y="1540" width="620" height="194" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+<text x="76" y="1576" font-family="Tahoma, sans-serif" font-size="24" fill="#000000">round_member_busy_periods</text>
+<polyline points="60,1592 680,1592" fill="none" stroke="#000000" stroke-width="2"/>
+<text x="76" y="1622" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">id [PK] | รหัสช่วงเวลาไม่ว่างของรอบ</text>
+<text x="76" y="1656" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">round_member_id [FK] | → round_members.id</text>
+<text x="76" y="1690" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">start_at | เวลาเริ่มไม่ว่างที่คัดลอกไว้</text>
+<text x="76" y="1724" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">end_at | เวลาสิ้นสุดไม่ว่างที่คัดลอกไว้</text>
+<rect x="1620" y="1860" width="620" height="194" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+<text x="1636" y="1896" font-family="Tahoma, sans-serif" font-size="24" fill="#000000">round_votes</text>
+<polyline points="1620,1912 2240,1912" fill="none" stroke="#000000" stroke-width="2"/>
+<text x="1636" y="1942" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">id [PK] | รหัสการลงคะแนน</text>
+<text x="1636" y="1976" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">round_member_id [FK, UK] | → round_members.id</text>
+<text x="1636" y="2010" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">round_candidate_id [FK] | → round_candidates.id</text>
+<text x="1636" y="2044" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">created_at, updated_at | เวลาสร้างและแก้ไข</text>
+<text x="60" y="2140" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">ข้อกำหนดห้ามซ้ำ: room_members(room_id, user_id) • round_members(meeting_round_id, room_member_id)</text>
+<text x="60" y="2180" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">meeting_rounds(room_id, round_no) และ (room_id, active_marker) • round_candidates(meeting_round_id, start_at)</text>
+<text x="60" y="2220" font-family="Tahoma, sans-serif" font-size="20" fill="#000000">เวลาไม่ว่างของรอบเป็นข้อมูลสำเนา จึงไม่มี FK ไปยังกิจกรรมส่วนตัว • available_member_ids เป็น JSON ไม่ใช่ FK</text>
+</svg>
