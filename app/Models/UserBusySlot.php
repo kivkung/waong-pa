@@ -45,7 +45,10 @@ class UserBusySlot extends Model
     /** @return list<array{start_at: CarbonImmutable, end_at: CarbonImmutable}> */
     public function occurrencesBetween(CarbonImmutable $rangeStart, CarbonImmutable $rangeEnd): array
     {
-        if ($rangeStart >= $rangeEnd || $this->start_at >= $rangeEnd) {
+        if ($rangeStart >= $rangeEnd) {
+            return [];
+        }
+        if ($this->start_at >= $rangeEnd) {
             return [];
         }
 
@@ -59,15 +62,9 @@ class UserBusySlot extends Model
         }
 
         $durationSeconds = (int) $this->start_at->diffInSeconds($this->end_at);
-        // เริ่มใกล้ช่วงที่ร้องขอ ไม่วนตั้งแต่ครั้งแรก และเผื่อกิจกรรมที่คร่อมช่วงค้นหา
+        // เผื่อกิจกรรมที่เริ่มก่อนช่วงค้นหา แต่ยังไม่จบ
         $earliestStart = $rangeStart->subSeconds($durationSeconds);
-        if ($rule->frequency === 'weekly') {
-            $firstIndex = (int) floor($this->start_at->diffInDays($earliestStart, false) / 7) - 1;
-        } else {
-            $firstIndex = ($earliestStart->year - $this->start_at->year) * 12
-                + $earliestStart->month - $this->start_at->month - 1;
-        }
-        $firstIndex = max(0, $firstIndex);
+        $firstIndex = $this->firstOccurrenceIndex($earliestStart, $rule->frequency);
         $periods = [];
 
         for ($index = $firstIndex; $index < $rule->occurrence_count; $index++) {
@@ -90,15 +87,42 @@ class UserBusySlot extends Model
         return $periods;
     }
 
+    private function firstOccurrenceIndex(CarbonImmutable $earliestStart, string $frequency): int
+    {
+        if ($earliestStart <= $this->start_at) {
+            return 0;
+        }
+
+        // ข้ามครั้งเก่า ๆ ที่อยู่นอกช่วงค้นหา เพื่อไม่วนหลายล้านครั้ง
+        if ($frequency === 'weekly') {
+            $daysPassed = $this->start_at->diffInDays($earliestStart);
+            $index = (int) ($daysPassed / 7);
+        } else {
+            $yearsPassed = $earliestStart->year - $this->start_at->year;
+            $monthsPassed = $earliestStart->month - $this->start_at->month;
+            $index = ($yearsPassed * 12) + $monthsPassed;
+        }
+
+        // เริ่มก่อนหนึ่งครั้ง เผื่อวันสิ้นเดือนหรือกิจกรรมที่คร่อมวัน
+        $index = $index - 1;
+        if ($index < 0) {
+            return 0;
+        }
+
+        return $index;
+    }
+
     /** @return list<array{start_at: CarbonImmutable, end_at: CarbonImmutable}> */
     public static function windows(MeetingRound $round): array
     {
         $windows = [];
-        for ($day = $round->search_start_date; $day->lte($round->search_end_date); $day = $day->addDay()) {
+        $day = $round->search_start_date;
+        while ($day <= $round->search_end_date) {
             $windows[] = [
                 'start_at' => $day->setTimeFromTimeString($round->daily_start_time),
                 'end_at' => $day->setTimeFromTimeString($round->daily_end_time),
             ];
+            $day = $day->addDay();
         }
 
         return $windows;
@@ -132,8 +156,15 @@ class UserBusySlot extends Model
         foreach ($activities as $activity) {
             foreach ($activity->occurrencesBetween($rangeStart, $rangeEnd) as $occurrence) {
                 foreach ($windows as $window) {
-                    $start = $occurrence['start_at']->max($window['start_at']);
-                    $end = $occurrence['end_at']->min($window['end_at']);
+                    // ตัดช่วงไม่ว่างให้เหลือเฉพาะส่วนที่อยู่ในกรอบค้นหา
+                    $start = $occurrence['start_at'];
+                    if ($start < $window['start_at']) {
+                        $start = $window['start_at'];
+                    }
+                    $end = $occurrence['end_at'];
+                    if ($end > $window['end_at']) {
+                        $end = $window['end_at'];
+                    }
                     if ($start < $end) {
                         $periods[] = ['start_at' => $start, 'end_at' => $end];
                     }
@@ -141,7 +172,14 @@ class UserBusySlot extends Model
             }
         }
         usort($periods, function (array $first, array $second): int {
-            return $first['start_at'] <=> $second['start_at'];
+            if ($first['start_at'] < $second['start_at']) {
+                return -1;
+            }
+            if ($first['start_at'] > $second['start_at']) {
+                return 1;
+            }
+
+            return 0;
         });
 
         return $periods;

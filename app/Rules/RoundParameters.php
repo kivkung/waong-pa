@@ -14,6 +14,8 @@ class RoundParameters
     {
         $validated = $request->validate([
             'activity_name' => ['required', 'string', 'max:150'],
+            'repeat_frequency' => ['nullable', Rule::in(['none', 'weekly', 'monthly'])],
+            'repeat_count' => ['exclude_unless:repeat_frequency,weekly,monthly', 'required', 'integer', 'min:2', 'max:52'],
             'search_start_date' => ['required', 'date_format:Y-m-d', 'after_or_equal:today'],
             'search_end_date' => ['required', 'date_format:Y-m-d', 'after_or_equal:search_start_date'],
             'daily_start_time' => ['required', 'date_format:H:i'],
@@ -72,6 +74,9 @@ class RoundParameters
                 'final_starts_at' => 'ต้องสรุปผลก่อนเวลาแรกที่ระบบนำมาค้นหานัด',
             ]);
         }
+
+        $validated['repeat_frequency'] = $validated['repeat_frequency'] ?? 'none';
+        $validated['repeat_count'] = $validated['repeat_frequency'] === 'none' ? 1 : (int) $validated['repeat_count'];
 
         return $validated;
     }

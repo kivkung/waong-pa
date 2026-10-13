@@ -1,12 +1,10 @@
 <?php
 
-use App\Actions\ProcessRecurringRounds;
-use App\Models\MeetingRound;
+use App\Actions\ProcessMeetingRound;
+use App\Models\BusySlotRecurrenceRule;
 use App\Models\Room;
-use App\Models\RoundRecurrenceSchedule;
 use App\Models\User;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -17,215 +15,143 @@ beforeEach(function () {
     $this->actingAs($this->owner)->post(route('rooms.store'), ['name' => 'Recurring room', 'visibility' => 'private']);
     $this->room = Room::query()->firstOrFail();
     $this->input = [
-        'activity_name' => 'Recurring meeting',
+        'activity_name' => 'Weekly meeting',
         'search_start_date' => '2026-10-14', 'search_end_date' => '2026-10-14',
         'daily_start_time' => '09:00', 'daily_end_time' => '12:00', 'duration_minutes' => 60,
         'professor_rule' => 'all',
         'join_starts_at' => '2026-10-13T09:00', 'review_starts_at' => '2026-10-13T10:00',
         'voting_starts_at' => '2026-10-13T11:00', 'final_starts_at' => '2026-10-13T12:00',
-        'repeat_frequency' => 'weekly', 'repeat_count' => 3,
+        'repeat_frequency' => 'weekly', 'repeat_count' => 10,
     ];
 });
 
-test('single rounds remain unchanged and creation exposes repeat fields', function () {
-    $this->get(route('rooms.rounds.create', $this->room))->assertOk()->assertSee('สร้างรอบใหม่อัตโนมัติ')->assertSee('repeat_count');
-    $this->post(route('rooms.rounds.store', $this->room), [...$this->input, 'repeat_frequency' => 'none'])->assertSessionHasNoErrors();
-    expect(MeetingRound::query()->firstOrFail()->recurrence_schedule_id)->toBeNull();
-    $this->assertDatabaseCount('round_recurrence_schedules', 0);
+test('one vote produces ten weekly appointments in each participant calendar without new voting rounds', function () {
+    $this->post(route('rooms.rounds.store', $this->room), $this->input)->assertSessionHasNoErrors();
+    $round = $this->room->rounds()->firstOrFail();
+    $student = User::factory()->create();
+    $membership = $this->room->members()->create([
+        'user_id' => $student->id, 'role' => 'student', 'weight' => 1, 'status' => 'active', 'joined_at' => now(),
+    ]);
+    foreach ([$this->room->members()->where('user_id', $this->owner->id)->firstOrFail(), $membership] as $member) {
+        $round->members()->create(['room_member_id' => $member->id, 'role' => $member->role, 'weight' => 1, 'joined_at' => now()]);
+    }
+    $this->get(route('rooms.rounds.show', [$this->room, $round]))->assertOk()->assertSee('นัดหมายเกิดซ้ำ');
+    $this->travelTo($round->voting_starts_at);
+    app(ProcessMeetingRound::class)->handle($round->id);
+    $winner = $round->candidates()->orderBy('start_at')->firstOrFail();
+    $this->post(route('rooms.rounds.votes.store', [$this->room, $round]), ['candidate_id' => $winner->id])->assertSessionHasNoErrors();
+    $this->travelTo($round->final_starts_at);
+    $this->artisan('rounds:process')->assertExitCode(0);
+    $this->get(route('rooms.rounds.show', [$this->room, $round]))->assertOk()
+        ->assertSee('ดูวันนัดหมายทั้งหมด')->assertSee($winner->start_at->addWeeks(9)->format('d/m/Y H:i'));
+    foreach ([$this->owner, $student] as $user) {
+        $activity = $user->busySlots()->with('recurrenceRule')->sole();
+        expect($activity->name)->toBe('Weekly meeting');
+        expect($activity->recurrenceRule->frequency)->toBe('weekly');
+        expect($activity->recurrenceRule->occurrence_count)->toBe(10);
+        $occurrences = $activity->occurrencesBetween($winner->start_at, $winner->start_at->addWeeks(11));
+        expect($occurrences)->toHaveCount(10);
+        expect($occurrences[0]['start_at']->equalTo($winner->start_at))->toBeTrue();
+        expect($occurrences[9]['start_at']->equalTo($winner->start_at->addWeeks(9)))->toBeTrue();
+        expect($occurrences[9]['end_at']->equalTo($winner->end_at->addWeeks(9)))->toBeTrue();
+        $this->actingAs($user)->get(route('activities.index', ['week' => $winner->start_at->addWeeks(9)->toDateString()]))
+            ->assertOk()->assertViewHas('calendarActivities', fn ($activities) => $activities->contains(fn ($item) => $item->id === $activity->id && $item->start_at->equalTo($winner->start_at->addWeeks(9))));
+        $this->get(route('activities.index', ['week' => $winner->start_at->addWeeks(10)->toDateString()]))
+            ->assertOk()->assertViewHas('calendarActivities', fn ($activities) => $activities->isEmpty());
+    }
+    $this->travelTo($winner->start_at->addWeeks(11));
+    $this->artisan('rounds:process')->assertExitCode(0);
+    $this->assertDatabaseCount('meeting_rounds', 1);
+    $this->assertDatabaseCount('round_votes', 1);
+    $this->assertDatabaseCount('user_busy_slots', 2);
+    $this->assertDatabaseCount('busy_slot_recurrence_rules', 2);
+    expect(Schema::hasTable('round_recurrence_schedules'))->toBeFalse();
 });
 
-test('weekly scheduler creates separate empty rounds only when due and never duplicates on retry', function () {
+test('monthly appointments clamp each occurrence from the original winning date and preserve duration', function () {
+    $this->input['repeat_frequency'] = 'monthly';
+    $this->input['repeat_count'] = 3;
+    $this->input['search_start_date'] = '2026-10-31';
+    $this->input['search_end_date'] = '2026-10-31';
     $this->post(route('rooms.rounds.store', $this->room), $this->input)->assertSessionHasNoErrors();
-    $first = $this->room->rounds()->firstOrFail();
-    $schedule = $first->recurrenceSchedule;
-    expect($schedule->next_run_at->format('Y-m-d H:i'))->toBe('2026-10-20 09:00');
+    $round = $this->room->rounds()->firstOrFail();
     $member = $this->room->members()->firstOrFail();
-    $first->members()->create(['room_member_id' => $member->id, 'role' => 'student', 'weight' => 1, 'joined_at' => now()]);
-    $this->travelTo($first->final_starts_at);
-    $this->artisan('rounds:process')->assertExitCode(0);
-    expect($first->fresh()->status)->toBe('completed');
-    expect($first->candidates()->count())->toBeGreaterThan(0);
-    $this->assertDatabaseCount('meeting_rounds', 1);
-
-    $this->travelTo(CarbonImmutable::parse('2026-10-20 08:59'));
-    app(ProcessRecurringRounds::class)->handle($schedule->id);
-    $this->assertDatabaseCount('meeting_rounds', 1);
-    $this->travelTo(CarbonImmutable::parse('2026-10-20 09:00'));
-    $this->artisan('rounds:process')->assertExitCode(0);
-    $this->artisan('rounds:process')->assertExitCode(0);
-    $this->assertDatabaseCount('meeting_rounds', 2);
-    $second = $this->room->rounds()->orderByDesc('round_no')->firstOrFail();
-    expect($second->round_no)->toBe(2);
-    expect($second->activity_name)->toBe('Recurring meeting');
-    expect($second->recurrence_index)->toBe(1);
-    expect($second->phase)->toBe('join');
-    expect($second->snapshot_taken_at)->toBeNull();
-    expect($second->candidates_generated_at)->toBeNull();
-    expect($second->members()->count())->toBe(0);
-    expect($second->candidates()->count())->toBe(0);
-    expect($second->search_start_date->format('Y-m-d'))->toBe('2026-10-21');
-    expect($second->voting_starts_at->format('Y-m-d H:i'))->toBe('2026-10-20 11:00');
-    $this->get(route('rooms.rounds.show', [$this->room, $second]))->assertOk()->assertSee('แผนสร้างรอบอัตโนมัติ')->assertSee('หยุดสร้างรอบถัดไป');
-
-    $this->travelTo(CarbonImmutable::parse('2026-10-27 09:00'));
-    $this->artisan('rounds:process')->assertExitCode(0);
-    $this->assertDatabaseCount('meeting_rounds', 3);
-    expect($schedule->fresh()->is_active)->toBeFalse();
-    expect($schedule->fresh()->next_run_at)->toBeNull();
-    $this->travelTo(CarbonImmutable::parse('2026-11-10 09:00'));
-    $this->artisan('rounds:process')->assertExitCode(0);
-    $this->assertDatabaseCount('meeting_rounds', 3);
+    $round->members()->create(['room_member_id' => $member->id, 'role' => 'student', 'weight' => 1, 'joined_at' => now()]);
+    $this->travelTo($round->final_starts_at);
+    app(ProcessMeetingRound::class)->handle($round->id);
+    $winner = $round->candidates()->where('is_winner', true)->firstOrFail();
+    $periods = $round->appointmentOccurrences($winner);
+    expect(array_map(fn ($period) => $period['start_at']->format('Y-m-d'), $periods))->toBe(['2026-10-31', '2026-11-30', '2026-12-31']);
+    $activity = $this->owner->busySlots()->sole();
+    expect($activity->occurrencesBetween($winner->start_at, $winner->start_at->addMonths(4)))->toEqual($periods);
 });
 
-test('monthly plans clamp the original join date and shift all phases by the same days', function () {
-    $this->travelTo(CarbonImmutable::parse('2026-01-30 08:00'));
-    $this->post(route('rooms.rounds.store', $this->room), [
-        ...$this->input, 'repeat_frequency' => 'monthly',
-        'join_starts_at' => '2026-01-31T09:00', 'review_starts_at' => '2026-01-31T10:00',
-        'voting_starts_at' => '2026-01-31T11:00', 'final_starts_at' => '2026-01-31T12:00',
-        'search_start_date' => '2026-02-01', 'search_end_date' => '2026-02-03',
-    ])->assertSessionHasNoErrors();
-    $schedule = RoundRecurrenceSchedule::query()->firstOrFail();
-    $second = $schedule->parametersFor(1);
-    $third = $schedule->parametersFor(2);
-    expect($second['join_starts_at'])->toBe('2026-02-28 09:00:00');
-    expect($second['search_start_date'])->toBe('2026-03-01');
-    expect($second['search_end_date'])->toBe('2026-03-03');
-    expect($third['join_starts_at'])->toBe('2026-03-31 09:00:00');
-    expect($third['search_start_date'])->toBe('2026-04-01');
-    expect($third['final_starts_at'])->toBe('2026-03-31 12:00:00');
+test('single appointments ignore repeat count and create one calendar activity', function () {
+    $this->post(route('rooms.rounds.store', $this->room), [...$this->input, 'repeat_frequency' => 'none'])->assertSessionHasNoErrors();
+    $round = $this->room->rounds()->firstOrFail();
+    expect($round->repeat_count)->toBe(1);
+    $member = $this->room->members()->firstOrFail();
+    $round->members()->create(['room_member_id' => $member->id, 'role' => 'student', 'weight' => 1, 'joined_at' => now()]);
+    $this->travelTo($round->final_starts_at);
+    app(ProcessMeetingRound::class)->handle($round->id);
+    expect($this->owner->busySlots()->sole()->recurrence_rule_id)->toBeNull();
 });
 
-test('missed joins are skipped and the count limits total planned rounds', function () {
+test('no eligible winner produces no calendar activities', function () {
+    $this->post(route('rooms.rounds.store', $this->room), [...$this->input, 'professor_rule' => 'at_least', 'min_professors' => 3])->assertSessionHasNoErrors();
+    $round = $this->room->rounds()->firstOrFail();
+    $this->travelTo($round->final_starts_at);
+    app(ProcessMeetingRound::class)->handle($round->id);
+    expect($round->fresh()->status)->toBe('completed');
+    $this->assertDatabaseCount('user_busy_slots', 0);
+    $this->assertDatabaseCount('busy_slot_recurrence_rules', 0);
+});
+
+test('reset edits appointment repetition without creating a new voting round', function () {
     $this->post(route('rooms.rounds.store', $this->room), $this->input)->assertSessionHasNoErrors();
-    $schedule = RoundRecurrenceSchedule::query()->firstOrFail();
-    $this->travelTo(CarbonImmutable::parse('2026-10-27 09:05'));
-    $this->artisan('rounds:process')->assertExitCode(0);
-    expect($schedule->fresh()->skipped_count)->toBe(1);
-    expect($schedule->fresh()->is_active)->toBeFalse();
-    $this->assertDatabaseCount('meeting_rounds', 2);
-    expect($this->room->rounds()->orderByDesc('round_no')->firstOrFail()->recurrence_index)->toBe(2);
-});
-
-test('an active manual round blocks creation until the planned join window is missed', function () {
-    $this->post(route('rooms.rounds.store', $this->room), $this->input);
-    $first = $this->room->rounds()->firstOrFail();
-    $first->status = 'completed';
-    $first->active_marker = null;
-    $first->save();
-    $schedule = $first->recurrenceSchedule;
-    $manual = new MeetingRound;
-    foreach ($schedule->parametersFor(1) as $field => $value) {
-        $manual->setAttribute($field, $value);
-    }
-    $manual->room_id = $this->room->id;
-    $manual->round_no = 2;
-    $manual->save();
-    $this->travelTo(CarbonImmutable::parse('2026-10-20 09:00'));
-    app(ProcessRecurringRounds::class)->handle($schedule->id);
-    expect($schedule->fresh()->next_index)->toBe(1);
-    $this->assertDatabaseCount('meeting_rounds', 2);
-    $this->travelTo(CarbonImmutable::parse('2026-10-20 10:00'));
-    app(ProcessRecurringRounds::class)->handle($schedule->id);
-    expect($schedule->fresh()->next_index)->toBe(2);
-    expect($schedule->fresh()->skipped_count)->toBe(1);
-    $this->assertDatabaseCount('meeting_rounds', 2);
-});
-
-test('only the owner can stop future rounds and stopping preserves the current round', function () {
-    $this->post(route('rooms.rounds.store', $this->room), $this->input);
     $round = $this->room->rounds()->firstOrFail();
-    $url = route('rooms.rounds.recurrence.stop', [$this->room, $round]);
-    $this->actingAs(User::factory()->create())->patch($url)->assertNotFound();
-    expect($round->recurrenceSchedule->fresh()->is_active)->toBeTrue();
-    $this->actingAs($this->owner)->patch($url)->assertSessionHas('success');
-    expect($round->fresh()->status)->toBe('active');
-    expect($round->recurrenceSchedule->fresh()->is_active)->toBeFalse();
-    $this->travelTo(CarbonImmutable::parse('2026-10-20 09:00'));
-    $this->artisan('rounds:process')->assertExitCode(0);
+    $this->get(route('rooms.rounds.reset.edit', [$this->room, $round]))->assertOk()->assertSee('repeat_frequency');
+    $this->patch(route('rooms.rounds.reset.update', [$this->room, $round]), [
+        ...$this->input, 'repeat_frequency' => 'monthly', 'repeat_count' => 4, 'confirm_reset' => 1,
+    ])->assertSessionHasNoErrors();
+    expect($round->fresh()->repeat_frequency)->toBe('monthly');
+    expect($round->fresh()->repeat_count)->toBe(4);
     $this->assertDatabaseCount('meeting_rounds', 1);
 });
 
-test('cancelling or resetting a recurring round stops its future schedule', function (string $operation) {
-    $this->post(route('rooms.rounds.store', $this->room), $this->input);
-    $round = $this->room->rounds()->firstOrFail();
-    if ($operation === 'cancel') {
-        $this->patch(route('rooms.rounds.cancel', [$this->room, $round]))->assertSessionHas('success');
-    } else {
-        $this->get(route('rooms.rounds.reset.edit', [$this->room, $round]))->assertSee('การรีเซ็ตนี้จะหยุดแผนสร้างรอบอัตโนมัติเดิมด้วย');
-        $this->patch(route('rooms.rounds.reset.update', [$this->room, $round]), [...$this->input, 'confirm_reset' => 1])->assertSessionHasNoErrors();
-    }
-    expect($round->recurrenceSchedule->fresh()->is_active)->toBeFalse();
-    expect($round->recurrenceSchedule->fresh()->next_run_at)->toBeNull();
-})->with(['cancel', 'reset']);
-
-test('invalid repeat settings and overlapping plans roll back the entire creation', function (array $changes, string $field) {
-    $this->post(route('rooms.rounds.store', $this->room), array_replace($this->input, $changes))->assertSessionHasErrors($field);
+test('invalid appointment recurrence is rejected before saving', function (array $changes, string $field) {
+    $this->post(route('rooms.rounds.store', $this->room), [...$this->input, ...$changes])->assertSessionHasErrors($field);
     $this->assertDatabaseCount('meeting_rounds', 0);
-    $this->assertDatabaseCount('round_recurrence_schedules', 0);
 })->with([
     [['repeat_frequency' => 'daily'], 'repeat_frequency'],
     [['repeat_count' => null], 'repeat_count'],
     [['repeat_count' => 1], 'repeat_count'],
     [['repeat_count' => 53], 'repeat_count'],
     [['repeat_count' => 2.5], 'repeat_count'],
-    [['review_starts_at' => '2026-10-21T10:00', 'voting_starts_at' => '2026-10-21T11:00', 'final_starts_at' => '2026-10-21T12:00',
-        'search_start_date' => '2026-10-22', 'search_end_date' => '2026-10-22'], 'repeat_frequency'],
 ]);
 
-test('a second recurring plan is rejected while a previous plan still has future rounds', function () {
-    $this->post(route('rooms.rounds.store', $this->room), $this->input);
+test('migration replaces old voting schedules and preserves existing rounds members candidates votes and private activities', function () {
+    $this->post(route('rooms.rounds.store', $this->room), $this->input)->assertSessionHasNoErrors();
     $round = $this->room->rounds()->firstOrFail();
-    $this->travelTo($round->final_starts_at);
-    $this->artisan('rounds:process')->assertExitCode(0);
-    $this->post(route('rooms.rounds.store', $this->room), [
-        ...$this->input, 'join_starts_at' => '2026-10-13T13:00', 'review_starts_at' => '2026-10-13T14:00',
-        'voting_starts_at' => '2026-10-13T15:00', 'final_starts_at' => '2026-10-13T16:00',
-    ])->assertSessionHasErrors('repeat_frequency');
-    $this->assertDatabaseCount('meeting_rounds', 1);
-    $this->assertDatabaseCount('round_recurrence_schedules', 1);
-});
-
-test('deleted rooms do not receive automatic rounds', function () {
-    $this->post(route('rooms.rounds.store', $this->room), $this->input);
-    $schedule = RoundRecurrenceSchedule::query()->firstOrFail();
-    $this->room->delete();
-    $this->travelTo(CarbonImmutable::parse('2026-10-20 09:00'));
-    $this->artisan('rounds:process')->assertExitCode(0);
-    expect($schedule->fresh()->is_active)->toBeFalse();
-    $this->assertDatabaseCount('meeting_rounds', 1);
-});
-
-test('round recurrence migration rolls back and reapplies on SQLite', function () {
-    $this->post(route('rooms.rounds.store', $this->room), [...$this->input, 'repeat_frequency' => 'none'])->assertSessionHasNoErrors();
-    $round = $this->room->rounds()->firstOrFail();
-    $member = $round->members()->create([
-        'room_member_id' => $this->room->members()->firstOrFail()->id,
-        'role' => 'student', 'weight' => 1, 'joined_at' => now(),
-    ]);
-    $member->busyPeriods()->create(['start_at' => '2026-10-14 09:00', 'end_at' => '2026-10-14 10:00']);
-    $candidate = $round->candidates()->create([
-        'start_at' => '2026-10-14 10:00', 'end_at' => '2026-10-14 11:00',
-        'available_count' => 1, 'professor_count' => 0, 'available_member_ids' => [$member->id],
-    ]);
+    $member = $round->members()->create(['room_member_id' => $this->room->members()->firstOrFail()->id, 'role' => 'student', 'weight' => 1, 'joined_at' => now()]);
+    $member->busyPeriods()->create(['start_at' => '2026-10-14 10:00', 'end_at' => '2026-10-14 11:00']);
+    $candidate = $round->candidates()->create(['start_at' => '2026-10-14 09:00', 'end_at' => '2026-10-14 10:00', 'available_count' => 1, 'professor_count' => 0, 'available_member_ids' => [$member->id]]);
     $candidate->votes()->create(['round_member_id' => $member->id]);
-    $migration = require database_path('migrations/2026_10_13_000002_create_round_recurrence_schedules.php');
+    $private = $this->owner->busySlots()->create(['name' => 'Private lesson', 'start_at' => '2026-10-14 10:00', 'end_at' => '2026-10-14 11:00']);
+    $private->recurrenceRule()->associate(BusySlotRecurrenceRule::create(['frequency' => 'weekly', 'occurrence_count' => 5]));
+    $private->save();
+    $migration = require database_path('migrations/2026_10_13_000003_replace_round_schedules_with_appointment_recurrence.php');
     $migration->down();
-    expect(Schema::hasColumn('meeting_rounds', 'recurrence_schedule_id'))->toBeFalse();
-    expect(Schema::hasTable('round_recurrence_schedules'))->toBeFalse();
+    $scheduleId = DB::table('round_recurrence_schedules')->insertGetId(['room_id' => $this->room->id, 'frequency' => 'monthly', 'round_count' => 4, 'template' => '{}']);
+    DB::table('meeting_rounds')->where('id', $round->id)->update(['recurrence_schedule_id' => $scheduleId, 'recurrence_index' => 0]);
     $migration->up();
-    expect(Schema::hasColumn('meeting_rounds', 'recurrence_schedule_id'))->toBeTrue();
-    expect($round->fresh())->not->toBeNull();
+    expect($round->fresh()->repeat_frequency)->toBe('monthly');
+    expect($round->fresh()->repeat_count)->toBe(4);
+    expect(Schema::hasTable('round_recurrence_schedules'))->toBeFalse();
+    expect(Schema::hasColumn('meeting_rounds', 'recurrence_index'))->toBeFalse();
     expect($member->fresh())->not->toBeNull();
     expect($candidate->fresh())->not->toBeNull();
-    $this->assertDatabaseCount('round_member_busy_periods', 1);
     $this->assertDatabaseCount('round_votes', 1);
-    $invalidRound = $this->input;
-    unset($invalidRound['repeat_frequency'], $invalidRound['repeat_count']);
-    $invalidRound['room_id'] = $this->room->id;
-    $invalidRound['round_no'] = 2;
-    $invalidRound['status'] = 'completed';
-    $invalidRound['active_marker'] = null;
-    $invalidRound['professor_rule'] = 'invalid';
-    expect(fn () => DB::table('meeting_rounds')->insert($invalidRound))->toThrow(QueryException::class);
+    $this->assertDatabaseCount('round_member_busy_periods', 1);
+    expect($private->fresh()->recurrenceRule->occurrence_count)->toBe(5);
 });

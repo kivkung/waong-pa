@@ -16,7 +16,7 @@
 @endphp
 <div class="mb-3">
     <label for="frequency" class="form-label">การเกิดซ้ำ</label>
-    <select id="frequency" name="frequency" class="form-select">
+    <select id="frequency" name="frequency" class="form-select" data-recurrence-count="occurrence_count">
         <option value="none" @selected($frequency === 'none')>ไม่ซ้ำ</option>
         <option value="weekly" @selected($frequency === 'weekly')>ทุกสัปดาห์</option>
         <option value="monthly" @selected($frequency === 'monthly')>ทุกเดือน</option>
@@ -26,7 +26,7 @@
     <label for="occurrence_count" class="form-label">จำนวนครั้งทั้งหมด</label>
     <input id="occurrence_count" name="occurrence_count" type="number" min="2" step="1" class="form-control"
         aria-describedby="recurrence-help"
-        value="{{ old('occurrence_count', isset($activity) ? ($activity->recurrenceRule->occurrence_count ?? '') : '') }}">
+        value="{{ old('occurrence_count', isset($activity) ? ($activity->recurrenceRule->occurrence_count ?? '') : '') }}" @disabled($frequency === 'none') @required($frequency !== 'none')>
     <p id="recurrence-help" class="small text-secondary mt-2">กรอกเมื่อเลือกกิจกรรมซ้ำ อย่างน้อย 2 ครั้ง และนับรวมครั้งแรกด้วย เช่น 5 ครั้ง = ครั้งแรกและอีก 4 ครั้ง หากวันนั้นไม่มีในเดือนถัดไป จะใช้วันสุดท้ายของเดือน</p>
 </div>
 <div>

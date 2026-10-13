@@ -53,18 +53,18 @@
                             <input id="duration_minutes" name="duration_minutes" type="number" class="form-control" value="{{ old('duration_minutes', 60) }}" min="30" max="600" step="30" required>
                         </div>
                         <div class="mt-3">
-                            <label class="form-label" for="repeat_frequency">สร้างรอบใหม่อัตโนมัติ</label>
-                            <select id="repeat_frequency" name="repeat_frequency" class="form-select">
+                            <label class="form-label" for="repeat_frequency">นัดหมายเกิดซ้ำ</label>
+                            <select id="repeat_frequency" name="repeat_frequency" class="form-select" data-recurrence-count="repeat_count">
                                 <option value="none" @selected(old('repeat_frequency', 'none') === 'none')>ไม่ซ้ำ</option>
                                 <option value="weekly" @selected(old('repeat_frequency') === 'weekly')>ทุกสัปดาห์</option>
                                 <option value="monthly" @selected(old('repeat_frequency') === 'monthly')>ทุกเดือน</option>
                             </select>
                         </div>
                         <div class="mt-3">
-                            <label class="form-label" for="repeat_count">จำนวนรอบตามแผน (รวมรอบแรก)</label>
-                            <input id="repeat_count" name="repeat_count" type="number" min="2" max="52" step="1" class="form-control" value="{{ old('repeat_count') }}" aria-describedby="round-repeat-help">
-                            <div id="round-repeat-help" class="form-text">กรอกเมื่อเลือกซ้ำ ตั้งได้ 2–52 รอบ ระบบยึดวันเริ่มให้เข้าร่วมของรอบแรก แล้วเลื่อนกำหนดการและวันที่ค้นหาทั้งชุด แต่ละรอบต้องเข้าร่วมหรือเลือกสมาชิกใหม่ และโหวตใหม่</div>
-                            <p class="small text-secondary mt-2 mb-0">รายเดือนใช้วันสุดท้ายของเดือนหากไม่มีวันนั้น และกลับไปยึดวันต้นฉบับในเดือนถัดไป หากพ้นช่วงรับสมาชิกแล้วจะข้ามรอบนั้น รอบที่ข้ามนับรวมจำนวนตามแผนด้วย การยกเลิกหรือรีเซ็ตรอบจะหยุดแผนอัตโนมัติ</p>
+                            <label class="form-label" for="repeat_count">จำนวนครั้งของนัดหมาย (รวมครั้งแรก)</label>
+                            <input id="repeat_count" name="repeat_count" type="number" min="2" max="52" step="1" class="form-control" value="{{ old('repeat_count') }}" aria-describedby="round-repeat-help" @disabled(old('repeat_frequency', 'none') === 'none') @required(old('repeat_frequency', 'none') !== 'none')>
+                            <div id="round-repeat-help" class="form-text">กรอกเมื่อเลือกซ้ำ ตั้งได้ 2–52 ครั้ง รวมครั้งแรก โหวตครั้งเดียว แล้วนำวันเวลาที่ชนะไปทำซ้ำใน My Schedule ของสมาชิก</div>
+                            <p class="small text-secondary mt-2 mb-0">รายเดือนใช้วันสุดท้ายของเดือนหากไม่มีวันนั้น และกลับไปยึดวันต้นฉบับในเดือนถัดไป คะแนนความพร้อมคำนวณจากกรอบค้นหาของครั้งแรก</p>
                         </div>
                     </fieldset>
                 </section>

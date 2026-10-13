@@ -2,6 +2,7 @@
 
 namespace App\Actions;
 
+use App\Models\BusySlotRecurrenceRule;
 use App\Models\MeetingRound;
 use App\Models\UserBusySlot;
 use Illuminate\Support\Facades\DB;
@@ -72,11 +73,19 @@ class ProcessMeetingRound
                             continue;
                         }
 
-                        $user->busySlots()->create([
+                        $activity = $user->busySlots()->create([
                             'name' => $round->activity_name ?: 'นัดหมาย: '.$roomName,
                             'start_at' => $winner->start_at,
                             'end_at' => $winner->end_at,
                         ]);
+                        if ($round->repeat_frequency !== 'none') {
+                            $rule = BusySlotRecurrenceRule::create([
+                                'frequency' => $round->repeat_frequency,
+                                'occurrence_count' => $round->repeat_count,
+                            ]);
+                            $activity->recurrenceRule()->associate($rule);
+                            $activity->save();
+                        }
                     }
                 }
                 $round->phase = 'final';

@@ -1,9 +1,7 @@
 <?php
 
 use App\Actions\ProcessMeetingRound;
-use App\Actions\ProcessRecurringRounds;
 use App\Models\MeetingRound;
-use App\Models\RoundRecurrenceSchedule;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -21,16 +19,6 @@ Artisan::command('rounds:process', function () {
         } catch (Throwable $exception) {
             report($exception);
             $this->error('Round '.$round->id.': '.$exception->getMessage());
-            $failed = true;
-        }
-    }
-
-    foreach (RoundRecurrenceSchedule::query()->where('is_active', true)->where('next_run_at', '<=', now())->cursor() as $schedule) {
-        try {
-            app(ProcessRecurringRounds::class)->handle($schedule->id);
-        } catch (Throwable $exception) {
-            report($exception);
-            $this->error('Recurring schedule '.$schedule->id.': '.$exception->getMessage());
             $failed = true;
         }
     }

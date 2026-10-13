@@ -6,9 +6,6 @@
     <div class="wa-page-header mt-3"><div><span class="wa-kicker">จัดการรอบนัดหมาย</span><h1>รีเซ็ตการตั้งค่า</h1><p>กลับไปขั้นตอนเข้าร่วมและกำหนดช่วงเวลาใหม่</p></div></div>
     <div class="alert alert-warning"><i class="bi bi-exclamation-triangle me-1" aria-hidden="true"></i>สำเนาตารางของทุกคนในรอบจะถูกลบและดึงใหม่ตามกำหนดเวลาใหม่ สมาชิกในรอบยังอยู่เหมือนเดิม</div>
     <section class="wa-panel">
-        @if ($round->recurrenceSchedule?->is_active)
-            <div class="alert alert-warning">การรีเซ็ตนี้จะหยุดแผนสร้างรอบอัตโนมัติเดิมด้วย เพื่อไม่ให้สร้างรอบถัดไปจากกำหนดการเก่า</div>
-        @endif
         <form method="POST" action="{{ route('rooms.rounds.reset.update', [$room, $round]) }}">
             @csrf @method('PATCH')
             @if ($errors->any())
@@ -38,6 +35,17 @@
                         <div><label class="form-label" for="{{ $field }}">{{ $label }}</label><input class="form-control" id="{{ $field }}" name="{{ $field }}" type="datetime-local" required value="{{ old($field, $phaseDefaults[$field] ?? '') }}">@error($field)<div class="text-danger small mt-1">{{ $message }}</div>@enderror</div>
                     @endforeach
                 </div>
+            </fieldset>
+            <fieldset class="wa-form-section"><legend>นัดหมายเกิดซ้ำ</legend>
+                <label class="form-label" for="repeat_frequency">ความถี่</label>
+                <select class="form-select" id="repeat_frequency" name="repeat_frequency" data-recurrence-count="repeat_count">
+                    @foreach (['none' => 'ไม่ซ้ำ', 'weekly' => 'ทุกสัปดาห์', 'monthly' => 'ทุกเดือน'] as $value => $label)
+                        <option value="{{ $value }}" @selected(old('repeat_frequency', $round->repeat_frequency) === $value)>{{ $label }}</option>
+                    @endforeach
+                </select>
+                <label class="form-label mt-3" for="repeat_count">จำนวนครั้ง รวมครั้งแรก</label>
+                <input class="form-control" id="repeat_count" name="repeat_count" type="number" min="2" max="52" value="{{ old('repeat_count', $round->repeat_count > 1 ? $round->repeat_count : 2) }}" @disabled(old('repeat_frequency', $round->repeat_frequency) === 'none') @required(old('repeat_frequency', $round->repeat_frequency) !== 'none')>
+                <p class="form-text">โหวตครั้งเดียว แล้วบันทึกเวลาที่ชนะเป็นนัดหมายซ้ำในปฏิทิน</p>
             </fieldset>
             <label class="d-flex gap-2 align-items-start mb-3"><input class="form-check-input mt-1" type="checkbox" name="confirm_reset" value="1" required> <span>ยืนยันล้างสำเนาของทุกคนและรีเซ็ตรอบกลับขั้นตอนเข้าร่วม</span></label>
             <div class="wa-action-row"><button class="btn btn-warning" type="submit"><i class="bi bi-arrow-counterclockwise me-1" aria-hidden="true"></i>ยืนยันรีเซ็ตรอบ</button><a class="btn btn-outline-secondary" href="{{ route('rooms.rounds.show', [$room, $round]) }}">ยกเลิก</a></div>
