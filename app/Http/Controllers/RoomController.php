@@ -147,4 +147,20 @@ class RoomController extends Controller
             ->route('home')
             ->with('success', "ลบห้อง {$room->name} สำเร็จ");
     }
+
+    public function updateVisibility(Request $request, Room $room)
+    {
+        abort_unless(
+            (int) $room->owner_id === (int) $request->user()->id,
+            403
+        );
+
+        $room->visibility = $request->boolean('is_public')
+            ? 'public'
+            : 'private';
+
+        $room->save();
+
+        return back()->with('success', 'เปลี่ยนประเภทห้องแล้ว');
+    }
 }

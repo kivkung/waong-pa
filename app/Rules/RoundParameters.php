@@ -13,13 +13,14 @@ class RoundParameters
     public static function validate(Request $request): array
     {
         $validated = $request->validate([
+            'activity_name' => ['required', 'string', 'max:150'],
             'search_start_date' => ['required', 'date_format:Y-m-d', 'after_or_equal:today'],
             'search_end_date' => ['required', 'date_format:Y-m-d', 'after_or_equal:search_start_date'],
             'daily_start_time' => ['required', 'date_format:H:i'],
             'daily_end_time' => ['required', 'date_format:H:i', 'after_or_equal:daily_start_time'],
             'duration_minutes' => ['required', 'integer', 'min:30', 'max:600', 'multiple_of:30'],
             'professor_rule' => ['required', Rule::in(['at_least', 'all'])],
-            'min_professors' => ['exclude_if:professor_rule,all', 'required', 'integer', 'min:1', 'max:100'],
+            'min_professors' => ['exclude_if:professor_rule,all', 'required', 'integer', 'min:0', 'max:100'],
             'join_starts_at' => ['required', 'date_format:Y-m-d\TH:i'],
             'review_starts_at' => ['required', 'date_format:Y-m-d\TH:i', 'after:join_starts_at', 'after:now'],
             'voting_starts_at' => ['required', 'date_format:Y-m-d\TH:i', 'after:review_starts_at'],

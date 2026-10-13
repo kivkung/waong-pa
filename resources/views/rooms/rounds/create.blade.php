@@ -25,6 +25,11 @@
                     <fieldset>
                         <legend id="round-window-title">กรอบเวลาที่ต้องการนัด</legend>
                         <p>ระบบจะค้นหาเฉพาะวันและช่วงเวลาที่ระบุ</p>
+                        <div class="mb-3">
+                            <label class="form-label" for="activity_name">ชื่อกิจกรรม / หัวข้อนัด</label>
+                            <input id="activity_name" name="activity_name" type="text" class="form-control" value="{{ old('activity_name') }}" maxlength="150" required>
+                            @error('activity_name')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+                        </div>
                         <div class="wa-input-grid">
                             <div>
                                 <label class="form-label" for="search_start_date">วันแรก</label>
@@ -63,7 +68,7 @@
                         </div>
                         <div>
                             <label class="form-label" for="min_professors">จำนวนอาจารย์ขั้นต่ำ</label>
-                            <input id="min_professors" name="min_professors" type="number" class="form-control" value="{{ old('min_professors', 1) }}" min="1" max="100" step="1" aria-describedby="professor-help">
+                            <input id="min_professors" name="min_professors" type="number" class="form-control" value="{{ old('min_professors', 0) }}" min="0" max="100" step="1" aria-describedby="professor-help">
                             <div id="professor-help" class="form-text">ใช้เฉพาะกรณีเลือก “อย่างน้อยตามจำนวนที่กำหนด”</div>
                         </div>
                     </fieldset>
