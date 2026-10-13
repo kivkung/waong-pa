@@ -44,6 +44,10 @@ class RoundResetController extends Controller
                 $member->busyPeriods()->delete();
             }
             $round->save();
+            // reset เปลี่ยนกำหนดการ จึงหยุดแผนเดิมเพื่อไม่สร้างรอบด้วยเวลาเก่า
+            if ($round->recurrence_schedule_id !== null) {
+                $round->recurrenceSchedule()->update(['is_active' => false, 'next_run_at' => null]);
+            }
 
             return redirect()->route('rooms.rounds.show', [$room, $round])
                 ->with('success', 'รีเซ็ตรอบกลับ Join แล้ว สำเนาตารางของทุกคนถูกล้าง ระบบจะดึงใหม่ตามเวลาที่กำหนด');

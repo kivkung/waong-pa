@@ -81,6 +81,9 @@
                             <td colspan="{{ $span }}">
                                 <a class="activity-box" href="{{ route('activities.edit', $calendarActivity) }}">
                                     <strong>{{ $calendarActivity->name }}</strong>
+                                    @if ($calendarActivity->recurrenceRule)
+                                        <small>กิจกรรมซ้ำ · {{ $calendarActivity->recurrenceRule->frequency === 'weekly' ? 'ทุกสัปดาห์' : 'ทุกเดือน' }}</small>
+                                    @endif
                                     <small>
                                         {{ $calendarActivity->start_at->format('d/m/Y H:i') }}
                                         – {{ $calendarActivity->end_at->format('d/m/Y H:i') }}
@@ -132,13 +135,18 @@
                 </div>
                 <span class="schedule-section-label">รายการที่บันทึก</span>
             </div>
+            @foreach (['กิจกรรมเกิดซ้ำ' => $recurringActivities, 'กิจกรรมครั้งเดียว' => $activities] as $groupTitle => $groupActivities)
+            <h3 class="h6 mt-3">{{ $groupTitle }}</h3>
             <div class="schedule-event-list">
-                @forelse ($activities as $activity)
+                @forelse ($groupActivities as $activity)
                     <article class="schedule-event">
                         <div class="schedule-event-main">
                             <span class="schedule-event-symbol" aria-hidden="true"><i class="bi bi-calendar-event"></i></span>
                             <div class="schedule-event-info">
                                 <h3>{{ $activity->name }}</h3>
+                                @if ($activity->recurrenceRule)
+                                    <p>{{ $activity->recurrenceRule->frequency === 'weekly' ? 'ทุกสัปดาห์' : 'ทุกเดือน' }} · ทั้งหมด {{ $activity->recurrenceRule->occurrence_count }} ครั้ง (รวมครั้งแรก) · แก้ไขหรือลบทั้งชุด</p>
+                                @endif
                                 <p><i class="bi bi-calendar3 me-1" aria-hidden="true"></i>
                                     @if ($activity->start_at->isSameDay($activity->end_at))
                                         {{ $activity->start_at->format('d/m/Y') }} · {{ $activity->start_at->format('H:i') }}–{{ $activity->end_at->format('H:i') }} น.
@@ -150,7 +158,7 @@
                         </div>
                         <div class="schedule-event-actions">
                             <a class="btn btn-outline-success btn-sm" href="{{ route('activities.edit', $activity) }}"><i class="bi bi-pencil-square me-1" aria-hidden="true"></i>แก้ไข</a>
-                            <form method="POST" action="{{ route('activities.destroy', $activity) }}" onsubmit="return confirm('ลบกิจกรรมนี้?')">
+                            <form method="POST" action="{{ route('activities.destroy', $activity) }}" onsubmit="return confirm('ลบกิจกรรมนี้? หากเป็นกิจกรรมซ้ำจะลบทั้งชุด')">
                                 @csrf
                                 @method('DELETE')
                                 <button class="btn btn-outline-danger btn-sm" type="submit"><i class="bi bi-trash me-1" aria-hidden="true"></i>ลบ</button>
@@ -160,12 +168,13 @@
                 @empty
                     <div class="schedule-empty">
                         <span class="schedule-empty-icon" aria-hidden="true"><i class="bi bi-calendar2-check"></i></span>
-                        <h3>ยังไม่มีกิจกรรม</h3>
+                        <h3>ยังไม่มี{{ $groupTitle }}</h3>
                         <p>เพิ่มช่วงเวลาที่คุณไม่สะดวกจากฟอร์มด้านซ้ายเพื่อเริ่มจัดการตารางของคุณ</p>
                     </div>
                 @endforelse
             </div>
-            <div class="schedule-pagination">{{ $activities->links('pagination::bootstrap-5') }}</div>
+            <div class="schedule-pagination">{{ $groupActivities->links('pagination::bootstrap-5') }}</div>
+            @endforeach
         </section>
     </div>
 </div>

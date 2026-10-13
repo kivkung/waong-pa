@@ -10,7 +10,7 @@
         <div>
             <span class="schedule-eyebrow">ตารางเวลาส่วนตัว</span>
             <h1>แก้ไขกิจกรรม</h1>
-            <p>อัปเดตชื่อและช่วงเวลาที่ไม่สะดวกของคุณ</p>
+            <p>การแก้ไขมีผลกับทั้งชุด รวมถึงรายการย้อนหลัง แต่สำเนาตารางที่เก็บเข้ารอบแล้วจะไม่เปลี่ยน</p>
         </div>
         <span class="schedule-heading-icon" aria-hidden="true"><i class="bi bi-pencil-square"></i></span>
     </header>
