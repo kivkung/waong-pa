@@ -121,8 +121,8 @@
                             <span class="wa-muted small">เมื่อกดข้าม ระบบจะเก็บ Snapshot จากข้อมูลตารางของสมาชิก ณ ตอนนั้นและสร้างตัวเลือกทันที โดยไม่รอเวลาหน่วงปกติ</span>
                         @endif
                     @endif
-                    <a href="{{ route('rooms.rounds.reset.edit', [$room, $round]) }}" class="btn btn-outline-secondary">รีเซ็ตรอบกลับขั้นตอนเข้าร่วม</a>
-                    <form method="POST" action="{{ route('rooms.rounds.cancel', ['room' => $room, 'round' => $round]) }}" onsubmit="return confirm('ต้องการยกเลิกรอบนี้หรือไม่? หากมีแผนสร้างรอบอัตโนมัติ แผนนั้นจะหยุดด้วย')">
+                    <a href="{{ route('rooms.rounds.reset.edit', [$room, $round]) }}" class="btn btn-outline-secondary">แก้ไขการตั้งค่ารอบ</a>
+                    <form method="POST" action="{{ route('rooms.rounds.cancel', ['room' => $room, 'round' => $round]) }}" onsubmit="return confirm('ต้องการยกเลิกรอบนี้หรือไม่?')">
                         @csrf
                         @method('PATCH')
                         <button type="submit" class="btn btn-outline-danger">ยกเลิกรอบ</button>
