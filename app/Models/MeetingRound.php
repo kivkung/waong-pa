@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
+ * @property CarbonImmutable $search_start_date
+ * @property CarbonImmutable $search_end_date
  * @property CarbonImmutable|null $join_starts_at
  * @property CarbonImmutable|null $review_starts_at
  * @property CarbonImmutable|null $voting_starts_at
@@ -52,6 +54,12 @@ class MeetingRound extends Model
     public function candidates(): HasMany
     {
         return $this->hasMany(RoundCandidate::class);
+    }
+
+    /** @return BelongsTo<RoundRecurrenceSchedule, $this> */
+    public function recurrenceSchedule(): BelongsTo
+    {
+        return $this->belongsTo(RoundRecurrenceSchedule::class);
     }
 
     public function membershipLocked(): bool

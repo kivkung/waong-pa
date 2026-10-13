@@ -1,8 +1,10 @@
 <?php
 
 use App\Actions\ProcessMeetingRound;
+use App\Models\BusySlotRecurrenceRule;
 use App\Models\Room;
 use App\Models\RoomMember;
+use App\Models\RoundMemberBusyPeriod;
 use App\Models\RoundVote;
 use App\Models\User;
 use Carbon\CarbonImmutable;
@@ -166,7 +168,7 @@ test('equal vote and readiness scores select earliest appointment', function () 
     expect($options[0]->fresh()->is_winner)->toBeTrue();
 });
 
-test('no votes or no eligible options finalize without inventing a winner', function (bool $empty) {
+test('no votes select the best available time and no eligible options finalize without a winner', function (bool $empty) {
     if ($empty) {
         $this->round->professor_rule = 'at_least';
         $this->round->min_professors = 3;
@@ -175,9 +177,61 @@ test('no votes or no eligible options finalize without inventing a winner', func
     $this->travelTo($this->round->final_starts_at);
     $this->actingAs($this->student)->get($this->show)->assertOk();
     expect($this->round->fresh()->phase)->toBe('final');
-    expect($this->round->candidates()->where('is_winner', true)->exists())->toBeFalse();
-    $this->get(route('rooms.rounds.calendar', [$this->room, $this->round]))->assertNotFound();
+    expect($this->round->candidates()->where('is_winner', true)->exists())->toBe(! $empty);
+    if ($empty) {
+        $this->get(route('rooms.rounds.calendar', [$this->room, $this->round]))->assertNotFound();
+    } else {
+        $winner = $this->round->candidates()->where('is_winner', true)->firstOrFail();
+        expect($winner->available_count)->toBe(2);
+        expect($winner->start_at->format('H:i'))->toBe('10:00');
+        $this->get($this->show)->assertSee('ระบบเลือกอัตโนมัติเนื่องจากไม่มีผู้โหวต');
+        $this->get(route('rooms.rounds.calendar', [$this->room, $this->round]))->assertOk();
+    }
 })->with([true, false]);
+
+test('recurring activities feed private frozen snapshots candidate scores and voting eligibility', function () {
+    $this->student->busySlots()->delete();
+    $activity = $this->student->busySlots()->create([
+        'name' => 'Secret recurring lesson', 'start_at' => '2026-10-04 08:00', 'end_at' => '2026-10-04 10:00',
+    ]);
+    $rule = BusySlotRecurrenceRule::create(['frequency' => 'weekly', 'occurrence_count' => 2]);
+    $activity->recurrenceRule()->associate($rule);
+    $activity->save();
+    $this->travelTo($this->round->voting_starts_at);
+    $this->actingAs($this->student)->get($this->show)->assertOk()->assertDontSee('Secret recurring lesson')
+        ->assertViewHas('candidates', fn ($options) => $options->count() === 3);
+    $period = $this->participant->busyPeriods()->firstOrFail();
+    expect($period->start_at->format('Y-m-d H:i'))->toBe('2026-10-11 09:00');
+    expect($period->end_at->format('H:i'))->toBe('10:00');
+    expect(array_keys($period->toArray()))->toBe(['id', 'round_member_id', 'start_at', 'end_at']);
+    expect(json_encode($period->toArray()))->not->toContain('Secret recurring lesson');
+
+    $this->patch(route('activities.update', $activity), [
+        'name' => 'Edited lesson', 'start_at' => '2026-10-04T11:00', 'end_at' => '2026-10-04T12:00',
+        'frequency' => 'weekly', 'occurrence_count' => 5,
+    ])->assertSessionHasNoErrors();
+    app(ProcessMeetingRound::class)->handle($this->round->id);
+    expect($period->fresh()->start_at->eq($period->start_at))->toBeTrue();
+    $options = $this->round->candidates()->orderBy('start_at')->get();
+    expect($options->pluck('available_count')->all())->toBe([1, 1, 2, 2, 2]);
+    $this->post($this->vote, ['candidate_id' => $options[0]->id])->assertSessionHasErrors('candidate_id');
+    $this->post($this->vote, ['candidate_id' => $options[4]->id])->assertSessionHasNoErrors();
+
+    // reset แล้วจึงนำกฎใหม่มาใช้ โดยคะแนนโหวตและสำเนาเดิมต้องถูกล้าง
+    $this->actingAs($this->owner)->patch(route('rooms.rounds.reset.update', [$this->room, $this->round]), [
+        'search_start_date' => '2026-10-11', 'search_end_date' => '2026-10-11',
+        'daily_start_time' => '09:00', 'daily_end_time' => '12:00', 'duration_minutes' => 60,
+        'professor_rule' => 'all', 'join_starts_at' => '2026-10-10T09:00',
+        'review_starts_at' => '2026-10-10T14:00', 'voting_starts_at' => '2026-10-10T15:00',
+        'final_starts_at' => '2026-10-10T16:00', 'confirm_reset' => 1,
+    ])->assertSessionHasNoErrors();
+    $this->assertDatabaseCount('round_votes', 0);
+    expect(RoundMemberBusyPeriod::query()->count())->toBe(0);
+    $this->travelTo($this->round->fresh()->voting_starts_at);
+    app(ProcessMeetingRound::class)->handle($this->round->id);
+    expect($this->participant->busyPeriods()->firstOrFail()->start_at->format('H:i'))->toBe('11:00');
+    expect($this->round->candidates()->orderBy('start_at')->pluck('available_count')->all())->toBe([2, 2, 2, 1, 1]);
+});
 
 test('reset deletes candidates and votes and cancelled rounds reject votes', function () {
     $this->travelTo($this->round->voting_starts_at);

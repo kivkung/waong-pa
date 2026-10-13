@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Actions\ProcessMeetingRound;
 use App\Models\MeetingRound;
 use App\Models\Room;
+use App\Models\RoundRecurrenceSchedule;
 use App\Models\RoundVote;
 use App\Rules\RoundParameters;
 use Carbon\CarbonImmutable;
@@ -13,6 +14,7 @@ use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class RoundController extends Controller
@@ -43,6 +45,10 @@ class RoundController extends Controller
         }
 
         $validated = RoundParameters::validate($request);
+        $recurrence = $request->validate([
+            'repeat_frequency' => ['nullable', Rule::in(['none', 'weekly', 'monthly'])],
+            'repeat_count' => ['exclude_unless:repeat_frequency,weekly,monthly', 'required', 'integer', 'min:2', 'max:52'],
+        ]);
 
         // {{ save data }}
         $round = new MeetingRound;
@@ -71,7 +77,47 @@ class RoundController extends Controller
         $round->final_starts_at = CarbonImmutable::parse($validated['final_starts_at']);
 
         try {
-            $round->save();
+            DB::transaction(function () use ($room, $round, $validated, $recurrence) {
+                // ล็อกห้องเพื่อให้การสร้างด้วยมือและ scheduler ไม่ชนกัน
+                Room::query()->lockForUpdate()->findOrFail($room->id);
+                $round->round_no = max(1, ((int) $room->rounds()->max('round_no')) + 1);
+                $frequency = $recurrence['repeat_frequency'] ?? 'none';
+                if ($frequency === 'weekly' || $frequency === 'monthly') {
+                    if (RoundRecurrenceSchedule::query()->where('room_id', $room->id)->where('is_active', true)->exists()) {
+                        throw ValidationException::withMessages(['repeat_frequency' => 'ห้องนี้มีแผนสร้างรอบอัตโนมัติอยู่แล้ว กรุณาหยุดแผนเดิมก่อน']);
+                    }
+                    $count = (int) $recurrence['repeat_count'];
+                    if ($count < 2 || $count > 52) {
+                        throw ValidationException::withMessages(['repeat_count' => 'จำนวนรอบต้องอยู่ระหว่าง 2–52 รอบ']);
+                    }
+                    $schedule = new RoundRecurrenceSchedule;
+                    $schedule->room_id = $room->id;
+                    $schedule->frequency = $frequency;
+                    $schedule->round_count = $count;
+                    $template = $validated;
+                    $template['min_professors'] = $round->min_professors;
+                    $schedule->setAttribute('template', $template);
+                    $schedule->next_index = 1;
+                    $schedule->skipped_count = 0;
+                    $schedule->is_active = true;
+
+                    // ตรวจทุกคู่รอบ รวมเดือนสั้น เพื่อไม่ให้เวลารับสมาชิกทับเฟสเดิม
+                    $previousFinal = $round->final_starts_at;
+                    for ($index = 1; $index < $count; $index++) {
+                        $parameters = $schedule->parametersFor($index);
+                        if (CarbonImmutable::parse((string) $parameters['join_starts_at'])->lte($previousFinal)) {
+                            throw ValidationException::withMessages(['repeat_frequency' => 'กำหนดการยาวเกินช่วงการเกิดซ้ำ รอบถัดไปต้องเปิดรับหลังรอบก่อนสรุปผล']);
+                        }
+                        $previousFinal = CarbonImmutable::parse((string) $parameters['final_starts_at']);
+                    }
+                    $next = $schedule->parametersFor(1);
+                    $schedule->next_run_at = CarbonImmutable::parse((string) $next['join_starts_at']);
+                    $schedule->save();
+                    $round->recurrence_schedule_id = $schedule->id;
+                    $round->recurrence_index = 0;
+                }
+                $round->save();
+            });
         } catch (UniqueConstraintViolationException $exception) {
             // อีกคำขออาจสร้างรอบสำเร็จระหว่างที่คำขอนี้กำลังทำงาน
             throw ValidationException::withMessages([
@@ -176,10 +222,28 @@ class RoundController extends Controller
             $round->active_marker = null;
             $round->cancelled_at = now();
             $round->save();
+            if ($round->recurrence_schedule_id !== null) {
+                $round->recurrenceSchedule()->update(['is_active' => false, 'next_run_at' => null]);
+            }
 
             return redirect()->route('rooms.show', ['room' => $room])
                 ->with('success', 'ยกเลิกรอบสำเร็จ');
 
         });
+    }
+
+    public function stopRecurrence(Request $request, Room $room, int $round): RedirectResponse
+    {
+        abort_unless((int) $room->owner_id === (int) $request->user()->id, $room->visibility === 'private' ? 404 : 403);
+        $meeting = $room->rounds()->findOrFail($round);
+        abort_if($meeting->recurrence_schedule_id === null, 404);
+        DB::transaction(function () use ($meeting) {
+            $schedule = RoundRecurrenceSchedule::query()->lockForUpdate()->findOrFail($meeting->recurrence_schedule_id);
+            $schedule->is_active = false;
+            $schedule->next_run_at = null;
+            $schedule->save();
+        });
+
+        return back()->with('success', 'หยุดสร้างรอบถัดไปแล้ว รอบที่สร้างไปแล้วยังดำเนินการตามเดิม');
     }
 }

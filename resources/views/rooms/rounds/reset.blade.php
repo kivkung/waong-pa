@@ -6,6 +6,9 @@
     <div class="wa-page-header mt-3"><div><span class="wa-kicker">จัดการรอบนัดหมาย</span><h1>รีเซ็ตรอบที่ {{ $round->round_no }}</h1><p>กลับไปขั้นตอนเข้าร่วมและกำหนดช่วงเวลาใหม่</p></div></div>
     <div class="alert alert-warning"><i class="bi bi-exclamation-triangle me-1" aria-hidden="true"></i>สำเนาตารางของทุกคนในรอบจะถูกลบและดึงใหม่ตามกำหนดเวลาใหม่ สมาชิกในรอบยังอยู่เหมือนเดิม</div>
     <section class="wa-panel">
+        @if ($round->recurrenceSchedule?->is_active)
+            <div class="alert alert-warning">การรีเซ็ตนี้จะหยุดแผนสร้างรอบอัตโนมัติเดิมด้วย เพื่อไม่ให้สร้างรอบถัดไปจากกำหนดการเก่า</div>
+        @endif
         <form method="POST" action="{{ route('rooms.rounds.reset.update', [$room, $round]) }}">
             @csrf @method('PATCH')
             @if ($errors->any())
