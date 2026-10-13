@@ -16,7 +16,12 @@ class RoundResetController extends Controller
         abort_unless((int) $room->owner_id === (int) $request->user()->id, $room->visibility === 'private' ? 404 : 403);
         $round = $room->rounds()->where('status', 'active')->findOrFail($round);
 
-        return view('rooms.rounds.reset', compact('room', 'round'));
+        $phaseDefaults = [];
+        foreach (['join_starts_at', 'review_starts_at', 'voting_starts_at', 'final_starts_at'] as $field) {
+            $phaseDefaults[$field] = $round->$field?->format('Y-m-d\\TH:i') ?? '';
+        }
+
+        return view('rooms.rounds.reset', compact('room', 'round', 'phaseDefaults'));
     }
 
     public function update(Request $request, Room $room, int $round): RedirectResponse

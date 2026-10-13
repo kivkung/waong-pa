@@ -25,6 +25,13 @@ class RoundParameters
             'review_starts_at' => ['required', 'date_format:Y-m-d\TH:i', 'after:join_starts_at', 'after:now'],
             'voting_starts_at' => ['required', 'date_format:Y-m-d\TH:i', 'after:review_starts_at'],
             'final_starts_at' => ['required', 'date_format:Y-m-d\TH:i', 'after:voting_starts_at'],
+        ], [
+            'search_start_date.after_or_equal' => 'วันแรกที่ค้นหาต้องเป็นวันนี้หรือวันถัดไป',
+            'search_end_date.after_or_equal' => 'วันสุดท้ายที่ค้นหาต้องไม่ก่อนวันแรกที่ค้นหา',
+            'daily_end_time.after_or_equal' => 'เวลาสิ้นสุดรายวันต้องไม่ก่อนเวลาเริ่มรายวัน',
+            'review_starts_at.after' => 'เวลาเริ่มตรวจข้อมูลต้องอยู่หลังเวลาเริ่มเข้าร่วมและต้องยังไม่ผ่านไป',
+            'voting_starts_at.after' => 'เวลาเริ่มโหวตต้องอยู่หลังเวลาเริ่มตรวจข้อมูล',
+            'final_starts_at.after' => 'เวลาเริ่มสรุปผลต้องอยู่หลังเวลาเริ่มโหวต',
         ]);
 
         $searchStart = CarbonImmutable::parse($validated['search_start_date']);
