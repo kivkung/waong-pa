@@ -5,6 +5,7 @@ use App\Http\Controllers\RoomController;
 use App\Http\Controllers\RoomMemberController;
 use App\Http\Controllers\RoundController;
 use App\Http\Controllers\RoundMemberController;
+use App\Http\Controllers\RoundPhaseController;
 use App\Http\Controllers\RoundResetController;
 use App\Http\Controllers\RoundVotingController;
 use App\Http\Controllers\UserBusySlotController;
@@ -33,6 +34,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/rooms/join', [RoomController::class, 'joinForm'])->name('rooms.join');
     Route::post('/rooms/join', [RoomController::class, 'join'])
         ->middleware('throttle:10,1')->name('rooms.join.store');
+    Route::patch('/rooms/{room}/visibility', [RoomController::class, 'updateVisibility'])
+        ->name('rooms.visibility');
 
     Route::get('/rooms/{room}/members/{member}/edit', [RoomMemberController::class, 'edit'])
         ->whereNumber('member')->name('rooms.members.edit');
@@ -46,6 +49,8 @@ Route::middleware('auth')->group(function () {
     Route::patch('/rooms/{room}/rounds/{round}/cancel', [RoundController::class, 'cancel'])
         ->whereNumber('round')
         ->name('rooms.rounds.cancel');
+    Route::patch('/rooms/{room}/rounds/{round}/skip-phase', [RoundPhaseController::class, 'skip'])
+        ->whereNumber('round')->name('rooms.rounds.skip-phase');
 
     Route::post('/rooms/{room}/rounds/{round}/members', [RoundMemberController::class, 'store'])
         ->whereNumber('round')->name('rooms.rounds.members.store');

@@ -1,6 +1,65 @@
 @extends('layouts.rooms')
 @section('title', $room->name)
 @section('content')
+<style>
+    .room-toggle {
+    display: block;
+    width: 260px;
+    cursor: pointer;
+}
+
+.room-toggle input {
+    position: absolute;
+    top:0;
+    left:0;
+    opacity: 0;
+}
+
+.room-toggle-track {
+    position: relative;
+    display: flex;
+    align-items: center;
+    height: 64px;
+    padding: 6px;
+    border: 1px solid #cbd5d1;
+    border-radius: 20px;
+    background: #eef5f1;
+}
+
+.room-toggle-thumb {
+    position: absolute;
+    top: 6px;
+    bottom: 6px;
+    left: 6px;
+    width: calc(50% - 6px);
+    border-radius: 14px;
+    background: #198754;
+    transition: transform 0.2s;
+}
+
+.room-toggle-text {
+    position: relative;
+    z-index: 999;
+    flex: 1;
+    text-align: center;
+    color: #365448;
+}
+
+.room-toggle input:checked + .room-toggle-track
+.room-toggle-thumb {
+    transform: translateX(100%);
+}
+
+/* ฝั่งที่เลือกเป็นตัวอักษรสีขาว */
+.room-toggle input:not(:checked) + .room-toggle-track
+.room-toggle-text:nth-child(2),
+.room-toggle input:checked + .room-toggle-track
+.room-toggle-text:last-child {
+    color: white;
+}
+
+</style>
+
 <div class="wa-page">
     <div class="wa-page-header">
         <div>
@@ -36,8 +95,38 @@
             </div>
             <dl class="wa-detail-grid mb-3">
                 <div class="wa-detail-field">
-                    <dt>ประเภทห้อง</dt>
-                    <dd>{{ $room->visibility === 'public' ? 'ห้องสาธารณะ' : 'ห้องส่วนตัว' }}</dd>
+                    @if ((int) auth()->id() === (int) $room->owner_id)
+                    <form method="POST"
+                    action="{{ route('rooms.visibility', $room) }}">
+                    @csrf
+                    @method('PATCH')
+
+                    <label class="room-toggle">
+                        <input
+                            type="checkbox"
+                            name="is_public"
+                            value="1"
+                            aria-label="เปิดห้องสาธารณะ"
+                            @checked($room->visibility === 'public')
+                            @disabled((int) auth()->id() !== (int) $room->owner_id)
+                            onchange="this.form.requestSubmit()"
+                        >
+
+                        <span class="room-toggle-track">
+                            <span class="room-toggle-thumb"></span>
+                            <span class="room-toggle-text">ส่วนตัว</span>
+                            <span class="room-toggle-text">สาธารณะ</span>
+                        </span>
+                    </label>
+                </form>
+                @else
+                    <p>
+                        {{ $room->visibility === 'public'
+                            ? 'ห้องสาธารณะ'
+                            : 'ห้องส่วนตัว' }}
+                    </p>
+                @endif
+
                 </div>
                 <div class="wa-detail-field">
                     <dt>วันที่สร้าง</dt>
@@ -101,7 +190,10 @@
             @forelse ($rounds as $round)
                 <a class="wa-round-card" href="{{ route('rooms.rounds.show', compact('room', 'round')) }}">
                     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                        <strong>รอบที่ {{ $round->round_no }}</strong>
+                        <div>
+                            <strong>รอบที่ {{ $round->round_no }}</strong>
+                            <p>{{$round->activity_name}}</p>
+                        </div>
                         @switch($round->status)
                             @case('active')
                                 <span class="badge text-bg-primary">กำลังดำเนินการ</span>

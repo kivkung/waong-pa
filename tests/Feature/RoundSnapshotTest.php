@@ -50,6 +50,7 @@ function snapshotParticipant($test): RoundMember
 function resetInput(): array
 {
     return [
+        'activity_name' => 'Test activity',
         'search_start_date' => '2026-10-03', 'search_end_date' => '2026-10-04',
         'daily_start_time' => '09:00', 'daily_end_time' => '17:00', 'duration_minutes' => 60,
         'professor_rule' => 'all', 'join_starts_at' => '2026-10-02T09:00',
