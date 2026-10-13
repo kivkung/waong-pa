@@ -22,6 +22,7 @@ class MeetingRound extends Model
     public function casts(): array
     {
         return [
+            'repeat_count' => 'integer',
             'search_start_date' => 'immutable_date',
             'search_end_date' => 'immutable_date',
             'join_starts_at' => 'immutable_datetime',
@@ -57,10 +58,23 @@ class MeetingRound extends Model
         return $this->hasMany(RoundCandidate::class);
     }
 
-    /** @return BelongsTo<RoundRecurrenceSchedule, $this> */
-    public function recurrenceSchedule(): BelongsTo
+    /** @return list<array{start_at: CarbonImmutable, end_at: CarbonImmutable}> */
+    public function appointmentOccurrences(RoundCandidate $winner): array
     {
-        return $this->belongsTo(RoundRecurrenceSchedule::class);
+        $count = $this->repeat_frequency === 'none' ? 1 : $this->repeat_count;
+        $duration = (int) $winner->start_at->diffInSeconds($winner->end_at);
+        $occurrences = [];
+        for ($index = 0; $index < $count; $index++) {
+            $start = $winner->start_at;
+            if ($this->repeat_frequency === 'weekly') {
+                $start = $start->addWeeks($index);
+            } elseif ($this->repeat_frequency === 'monthly') {
+                $start = $start->addMonthsNoOverflow($index);
+            }
+            $occurrences[] = ['start_at' => $start, 'end_at' => $start->addSeconds($duration)];
+        }
+
+        return $occurrences;
     }
 
     public function membershipLocked(): bool

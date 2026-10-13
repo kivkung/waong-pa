@@ -153,8 +153,6 @@ test('review and exact final deadline reject votes and final ties prefer readine
     app(ProcessMeetingRound::class)->handle($this->round->id);
     expect($this->round->candidates()->where('is_winner', true)->count())->toBe(1);
     $this->get($this->show)->assertOk()->assertSee('เวลาที่ได้รับเลือก');
-    $this->get(route('rooms.rounds.calendar', [$this->room, $this->round]))->assertOk()
-        ->assertHeader('Content-Type', 'text/calendar; charset=utf-8')->assertSee('BEGIN:VEVENT')->assertSee('DTSTART:');
 });
 
 test('equal vote and readiness scores select earliest appointment', function () {
@@ -178,14 +176,11 @@ test('no votes select the best available time and no eligible options finalize w
     $this->actingAs($this->student)->get($this->show)->assertOk();
     expect($this->round->fresh()->phase)->toBe('final');
     expect($this->round->candidates()->where('is_winner', true)->exists())->toBe(! $empty);
-    if ($empty) {
-        $this->get(route('rooms.rounds.calendar', [$this->room, $this->round]))->assertNotFound();
-    } else {
+    if (! $empty) {
         $winner = $this->round->candidates()->where('is_winner', true)->firstOrFail();
         expect($winner->available_count)->toBe(2);
         expect($winner->start_at->format('H:i'))->toBe('10:00');
         $this->get($this->show)->assertSee('ระบบเลือกอัตโนมัติเนื่องจากไม่มีผู้โหวต');
-        $this->get(route('rooms.rounds.calendar', [$this->room, $this->round]))->assertOk();
     }
 })->with([true, false]);
 

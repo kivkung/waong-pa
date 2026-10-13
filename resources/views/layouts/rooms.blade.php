@@ -44,5 +44,6 @@
     </main>
     <footer class="container border-top py-4 text-secondary small">Waongpa · หาช่วงเวลาที่ลงตัว แล้วนัดกัน</footer>
     @stack('scripts')
+    <script src="{{ asset('js/recurrence-fields.js') }}"></script>
 </body>
 </html>

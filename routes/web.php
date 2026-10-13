@@ -16,12 +16,8 @@ Route::get('/', [PublicDashboardController::class, 'index'])->name('home');
 Route::get('/dashboard', [PublicDashboardController::class, 'index'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
-    Route::patch('/rooms/{room}/rounds/{round}/recurrence/stop', [RoundController::class, 'stopRecurrence'])
-        ->whereNumber('round')->name('rooms.rounds.recurrence.stop');
     Route::post('/rooms/{room}/rounds/{round}/votes', [RoundVotingController::class, 'store'])
         ->whereNumber('round')->name('rooms.rounds.votes.store');
-    Route::get('/rooms/{room}/rounds/{round}/calendar', [RoundVotingController::class, 'calendar'])
-        ->whereNumber('round')->name('rooms.rounds.calendar');
     Route::get('/activities', [UserBusySlotController::class, 'index'])->name('activities.index');
     Route::post('/activities', [UserBusySlotController::class, 'store'])->name('activities.store');
     Route::get('/activities/{activity}/edit', [UserBusySlotController::class, 'edit'])->whereNumber('activity')->name('activities.edit');
