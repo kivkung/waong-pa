@@ -24,9 +24,11 @@ class ProcessMeetingRound
         // ขั้นที่ 2: เก็บสำเนาเวลาไม่ว่างเพียงครั้งเดียว เมื่อพ้นเวลารอ
         DB::transaction(function () use ($roundId, $skipSnapshotDelay) {
             $round = MeetingRound::query()->lockForUpdate()->findOrFail($roundId);
-            if ($round->status !== 'active' || $round->phase === 'join'
+            if (
+                $round->status !== 'active' || $round->phase === 'join'
                 || $round->snapshot_taken_at !== null
-                || (! $skipSnapshotDelay && now()->lt($round->snapshotDueAt()))) {
+                || (!$skipSnapshotDelay && now()->lt($round->snapshotDueAt()))
+            ) {
                 return;
             }
             foreach ($round->members()->with('roomMember')->get() as $member) {
@@ -51,11 +53,17 @@ class ProcessMeetingRound
             if (now()->gte($round->final_starts_at)) {
                 // เลือกคะแนนโหวตสูงสุด ถ้าเท่ากันใช้จำนวนคนว่าง แล้วใช้เวลาเร็วกว่า
                 // ถ้าไม่มีผู้โหวต คะแนนโหวตจะเท่ากันที่ 0 จึงเลือกตามความพร้อมและเวลา
-                $winner = $round->candidates()->withCount('votes')
-                    ->orderByDesc('votes_count')
-                    ->orderByDesc('available_count')
-                    ->orderBy('start_at')
+                $weights = $round->members()->pluck('weight', 'id'); // [round_member_id => weight]
+
+                $winner = $round->candidates()->withCount('votes')->get()
+                    ->sortBy([
+                        fn($a, $b) => $b->votes_count <=> $a->votes_count,
+                        fn($a, $b) => $b->weightedScore($weights) <=> $a->weightedScore($weights),
+                        fn($a, $b) => $b->available_count <=> $a->available_count,
+                        fn($a, $b) => $a->start_at <=> $b->start_at,
+                    ])
                     ->first();
+
                 if ($winner) {
                     $winner->is_winner = true;
                     $winner->save();
@@ -74,7 +82,7 @@ class ProcessMeetingRound
                         }
 
                         $activity = $user->busySlots()->create([
-                            'name' => $round->activity_name ?: 'นัดหมาย: '.$roomName,
+                            'name' => $round->activity_name ?: 'นัดหมาย: ' . $roomName,
                             'start_at' => $winner->start_at,
                             'end_at' => $winner->end_at,
                         ]);

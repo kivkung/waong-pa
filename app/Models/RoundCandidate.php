@@ -5,6 +5,7 @@ namespace App\Models;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Collection;
 
 /**
  * @property CarbonImmutable $start_at
@@ -26,5 +27,11 @@ class RoundCandidate extends Model
     public function votes(): HasMany
     {
         return $this->hasMany(RoundVote::class);
+    }
+
+    public function weightedScore(Collection $weights): float
+    {
+        return (float) collect($this->available_member_ids)
+            ->sum(fn(int $id): float => (float) ($weights[$id] ?? 0));
     }
 }

@@ -28,6 +28,7 @@ class GenerateRoundCandidates
                 $availableMemberIds = [];
                 $availableProfessors = 0;
 
+                //เช็คว่าใครว่าง block นี้ และมีอาจารย์ที่ว่างกี่คน
                 foreach ($members as $member) {
                     $isBusy = false;
                     foreach ($member->busyPeriods as $period) {

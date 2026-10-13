@@ -12,6 +12,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -87,7 +88,7 @@ class RoundController extends Controller
         }
 
         return redirect()->route('rooms.show', $room)
-            ->with('success', 'สร้างรอบที่ '.$round->round_no.' เรียบร้อยแล้ว');
+            ->with('success', 'สร้างรอบที่ ' . $round->round_no . ' เรียบร้อยแล้ว');
     }
 
     public function show(Request $request, Room $room, int $round): View
@@ -119,7 +120,7 @@ class RoundController extends Controller
         $now = now();
 
         $canJoin = $isMember
-            && ! $hasJoined
+            && !$hasJoined
             && $round->status === 'active'
             && $round->phase === 'join'
             && $now->gte($round->join_starts_at)
@@ -155,10 +156,23 @@ class RoundController extends Controller
             if ($round->phase === 'voting' && $participant) {
                 $query->whereJsonContains('available_member_ids', $participant->id);
             }
-            // เรียงจำนวนคนว่างจากมากไปน้อย ถ้าเท่ากันเอาเวลาเร็วขึ้นก่อน
-            $candidates = $query->orderByDesc('available_count')
-                ->orderBy('start_at')
-                ->paginate(12, ['*'], 'candidates_page');
+
+            $weights = $round->members()->pluck('weight', 'id');
+
+            $sorted = $query->get()->sortBy([
+                fn($a, $b) => $b->weightedScore($weights) <=> $a->weightedScore($weights),
+                fn($a, $b) => $b->available_count <=> $a->available_count,
+                fn($a, $b) => $a->start_at <=> $b->start_at,
+            ])->values();
+
+            $page = LengthAwarePaginator::resolveCurrentPage('candidates_page');
+            $candidates = new LengthAwarePaginator(
+                $sorted->forPage($page, 12),
+                $sorted->count(),
+                12, 
+                $page,
+                ['path' => request()->url(), 'pageName' => 'candidates_page']
+            );
             $winner = $round->candidates()->withCount('votes')->where('is_winner', true)->first();
         }
 
