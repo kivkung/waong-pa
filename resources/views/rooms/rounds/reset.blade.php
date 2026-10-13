@@ -26,7 +26,7 @@
             <fieldset class="wa-form-section"><legend>เงื่อนไขอาจารย์</legend>
                 <div class="wa-input-grid">
                     <div><label class="form-label" for="professor_rule">เงื่อนไขอาจารย์</label><select class="form-select" id="professor_rule" name="professor_rule"><option value="at_least" @selected(old('professor_rule', $round->professor_rule) === 'at_least')>อย่างน้อยตามจำนวน</option><option value="all" @selected(old('professor_rule', $round->professor_rule) === 'all')>ทุกคน</option></select></div>
-                    <div><label class="form-label" for="min_professors">จำนวนขั้นต่ำ (ใช้เมื่อเลือกอย่างน้อย)</label><input class="form-control" id="min_professors" name="min_professors" type="number" min="1" max="100" value="{{ old('min_professors', $round->min_professors) }}"></div>
+                    <div><label class="form-label" for="min_professors">จำนวนขั้นต่ำ (ใช้เมื่อเลือกอย่างน้อย)</label><input class="form-control" id="min_professors" name="min_professors" type="number" min="0" max="100" value="{{ old('min_professors', $round->min_professors) }}"></div>
                 </div>
             </fieldset>
             <fieldset class="wa-form-section"><legend>กำหนดเวลาใหม่ทุกขั้นตอน</legend><p>ต้องเรียงลำดับ: เริ่มเข้าร่วม → ตรวจข้อมูล → โหวต → สรุปผล</p>
