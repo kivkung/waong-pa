@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 
 class ProcessMeetingRound
 {
-    public function handle(int $roundId): void
+    public function handle(int $roundId, bool $skipSnapshotDelay = false): void
     {
         // transaction บันทึกงานเป็นชุด และ lockForUpdate กันการประมวลผลรอบเดียวกันพร้อมกัน
         // ขั้นที่ 1: ปิดรับสมาชิกก่อน แม้การเก็บสำเนาในขั้นถัดไปล้มเหลว
@@ -21,10 +21,11 @@ class ProcessMeetingRound
         });
 
         // ขั้นที่ 2: เก็บสำเนาเวลาไม่ว่างเพียงครั้งเดียว เมื่อพ้นเวลารอ
-        DB::transaction(function () use ($roundId) {
+        DB::transaction(function () use ($roundId, $skipSnapshotDelay) {
             $round = MeetingRound::query()->lockForUpdate()->findOrFail($roundId);
             if ($round->status !== 'active' || $round->phase === 'join'
-                || $round->snapshot_taken_at !== null || now()->lt($round->snapshotDueAt())) {
+                || $round->snapshot_taken_at !== null
+                || (! $skipSnapshotDelay && now()->lt($round->snapshotDueAt()))) {
                 return;
             }
             foreach ($round->members()->with('roomMember')->get() as $member) {
@@ -57,11 +58,31 @@ class ProcessMeetingRound
                 if ($winner) {
                     $winner->is_winner = true;
                     $winner->save();
+
+                    // Save the selected meeting time to every participant's activity calendar.
+                    $roomName = $round->room()->value('name');
+                    $participants = $round->members()
+                        ->with('roomMember.user')
+                        ->get();
+
+                    foreach ($participants as $member) {
+                        $user = $member->roomMember?->user;
+
+                        if ($user === null) {
+                            continue;
+                        }
+
+                        $user->busySlots()->create([
+                            'name' => $round->activity_name ?: 'นัดหมาย: '.$roomName,
+                            'start_at' => $winner->start_at,
+                            'end_at' => $winner->end_at,
+                        ]);
+                    }
                 }
                 $round->phase = 'final';
                 $round->status = 'completed';
                 $round->active_marker = null;
-            } elseif (now()->gte($round->voting_starts_at)) {
+            } elseif (now()->gte($round->voting_starts_at) && $round->candidates()->exists()) {
                 $round->phase = 'voting';
             }
             $round->save();

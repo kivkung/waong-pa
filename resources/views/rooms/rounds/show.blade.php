@@ -6,7 +6,7 @@
         <div>
             <a class="wa-back" href="{{ route('rooms.show', compact('room')) }}"><i class="bi bi-arrow-left me-1" aria-hidden="true"></i>กลับห้อง</a>
             <div class="wa-kicker mt-3">{{ $room->name }}</div>
-            <h1>รอบนัดหมายที่ {{ $round->round_no }}</h1>
+            <h1>{{ $round->activity_name ?: 'รอบนัดหมายที่ '.$round->round_no }}</h1>
             <p>ดูเงื่อนไข รอบเวลา และสถานะการเข้าร่วมของสมาชิก</p>
         </div>
         <span class="badge {{ $round->status === 'active' ? 'text-bg-primary' : ($round->status === 'cancelled' ? 'text-bg-danger' : 'text-bg-secondary') }} align-self-start mt-2">
@@ -100,6 +100,27 @@
                 <h3 class="h6 fw-semibold">เครื่องมือเจ้าของห้อง</h3>
                 <div class="wa-action-row mt-3">
                     <a href="{{ route('rooms.rounds.members.edit', [$room, $round]) }}" class="btn btn-outline-success">แก้ไขสมาชิกในรอบ</a>
+                    @if (in_array($round->phase, ['join', 'review', 'voting'], true))
+                        @php
+                            $skipLabel = match ($round->phase) {
+                                'join' => 'ข้ามรับสมาชิก → ตรวจข้อมูล',
+                                'review' => 'ข้ามตรวจข้อมูล → เก็บ Snapshot และเปิดโหวต',
+                                'voting' => 'ข้ามโหวต → สรุปผล',
+                            };
+                        @endphp
+                        <form method="POST" action="{{ route('rooms.rounds.skip-phase', ['room' => $room, 'round' => $round]) }}"
+                              onsubmit="return confirm('ต้องการข้ามไปขั้นตอนถัดไปหรือไม่?')">
+                            @csrf
+                            @method('PATCH')
+                            <input type="hidden" name="expected_phase" value="{{ $round->phase }}">
+                            <button type="submit" class="btn btn-outline-primary">
+                                <i class="bi bi-skip-forward me-1" aria-hidden="true"></i>{{ $skipLabel }}
+                            </button>
+                        </form>
+                        @if ($round->phase === 'review')
+                            <span class="wa-muted small">เมื่อกดข้าม ระบบจะเก็บ Snapshot จากข้อมูลตารางของสมาชิก ณ ตอนนั้นและสร้างตัวเลือกทันที โดยไม่รอเวลาหน่วงปกติ</span>
+                        @endif
+                    @endif
                     <a href="{{ route('rooms.rounds.reset.edit', [$room, $round]) }}" class="btn btn-outline-secondary">รีเซ็ตรอบกลับขั้นตอนเข้าร่วม</a>
                     <form method="POST" action="{{ route('rooms.rounds.cancel', ['room' => $room, 'round' => $round]) }}" onsubmit="return confirm('ต้องการยกเลิกรอบนี้หรือไม่? หากมีแผนสร้างรอบอัตโนมัติ แผนนั้นจะหยุดด้วย')">
                         @csrf

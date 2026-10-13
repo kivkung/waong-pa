@@ -17,6 +17,7 @@ beforeEach(function () {
     $this->actingAs($this->owner)->post(route('rooms.store'), ['name' => 'Recurring room', 'visibility' => 'private']);
     $this->room = Room::query()->firstOrFail();
     $this->input = [
+        'activity_name' => 'Recurring meeting',
         'search_start_date' => '2026-10-14', 'search_end_date' => '2026-10-14',
         'daily_start_time' => '09:00', 'daily_end_time' => '12:00', 'duration_minutes' => 60,
         'professor_rule' => 'all',
@@ -55,6 +56,7 @@ test('weekly scheduler creates separate empty rounds only when due and never dup
     $this->assertDatabaseCount('meeting_rounds', 2);
     $second = $this->room->rounds()->orderByDesc('round_no')->firstOrFail();
     expect($second->round_no)->toBe(2);
+    expect($second->activity_name)->toBe('Recurring meeting');
     expect($second->recurrence_index)->toBe(1);
     expect($second->phase)->toBe('join');
     expect($second->snapshot_taken_at)->toBeNull();

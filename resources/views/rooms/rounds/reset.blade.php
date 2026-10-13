@@ -15,6 +15,7 @@
                 <div class="alert alert-danger" role="alert"><ul class="mb-0">@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>
             @endif
             <fieldset class="wa-form-section"><legend>กรอบวันที่และเวลา</legend>
+                <div class="mb-3"><label class="form-label" for="activity_name">ชื่อกิจกรรม / หัวข้อนัด</label><input class="form-control" id="activity_name" name="activity_name" type="text" maxlength="150" required value="{{ old('activity_name', $round->activity_name) }}">@error('activity_name')<div class="text-danger small mt-1">{{ $message }}</div>@enderror</div>
                 <div class="wa-input-grid">
                     @foreach (['search_start_date' => 'วันแรกที่ค้นหา', 'search_end_date' => 'วันสุดท้ายที่ค้นหา'] as $field => $label)
                         <div><label class="form-label" for="{{ $field }}">{{ $label }}</label><input class="form-control" id="{{ $field }}" name="{{ $field }}" type="date" required value="{{ old($field, $round->$field->format('Y-m-d')) }}"></div>

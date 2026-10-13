@@ -54,6 +54,7 @@ class RoundController extends Controller
         $round = new MeetingRound;
 
         $round->room_id = $room->id;
+        $round->activity_name = $validated['activity_name'];
         $round->round_no = ($room->rounds()->orderByDesc('round_no')->first()->round_no ?? 0) + 1;
 
         $round->status = 'active';

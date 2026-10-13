@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 /**
  * @property CarbonImmutable $search_start_date
  * @property CarbonImmutable $search_end_date
+ * @property string|null $activity_name
  * @property CarbonImmutable|null $join_starts_at
  * @property CarbonImmutable|null $review_starts_at
  * @property CarbonImmutable|null $voting_starts_at
