@@ -8,7 +8,7 @@
         <div class="flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
             <div class="flex w-full max-w-md flex-col gap-6">
                 <a href="{{ route('home') }}" class="flex flex-col items-center gap-2 font-medium" wire:navigate>
-                    <span class="auth-logo flex size-14 items-center justify-center rounded-2xl" aria-hidden="true">W</span>
+                    <img src="{{ asset('favicon.svg') }}" alt="" width="32" height="32" class="auth-logo flex size-14 items-center justify-center rounded-2xl" aria-hidden="true">
                     <span class="auth-brand">Waongpa</span>
                 </a>
                 <div class="auth-card flex flex-col gap-6 rounded-3xl p-6 sm:p-8">{{ $slot }}</div>
