@@ -185,6 +185,7 @@ test('reset deletes candidates and votes and cancelled rounds reject votes', fun
     $candidate = $this->round->candidates()->where('available_count', 2)->firstOrFail();
     $this->post($this->vote, ['candidate_id' => $candidate->id]);
     $this->actingAs($this->owner)->patch(route('rooms.rounds.reset.update', [$this->room, $this->round]), [
+        'activity_name' => 'Test activity',
         'search_start_date' => '2026-10-11', 'search_end_date' => '2026-10-11',
         'daily_start_time' => '09:00', 'daily_end_time' => '12:00', 'duration_minutes' => 60,
         'professor_rule' => 'all', 'join_starts_at' => '2026-10-10T09:00',
