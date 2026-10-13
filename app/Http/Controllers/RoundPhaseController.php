@@ -22,6 +22,7 @@ class RoundPhaseController extends Controller
             'expected_phase' => ['required', Rule::in(['join', 'review', 'voting'])],
         ]);
 
+        /** @var 'join'|'review'|'voting' $expectedPhase */
         $expectedPhase = $validated['expected_phase'];
         $problem = DB::transaction(function () use ($room, $round, $expectedPhase): ?string {
             $round = $room->rounds()->lockForUpdate()->findOrFail($round);

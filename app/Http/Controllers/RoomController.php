@@ -148,7 +148,7 @@ class RoomController extends Controller
             ->with('success', "ลบห้อง {$room->name} สำเร็จ");
     }
 
-    public function updateVisibility(Request $request, Room $room)
+    public function updateVisibility(Request $request, Room $room): RedirectResponse
     {
         abort_unless(
             (int) $room->owner_id === (int) $request->user()->id,
