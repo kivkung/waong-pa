@@ -114,7 +114,7 @@
                             @method('PATCH')
                             <input type="hidden" name="expected_phase" value="{{ $round->phase }}">
                             <button type="submit" class="btn btn-outline-primary">
-                                <i class="bi bi-skip-forward me-1" aria-hidden="true"></i>{{ $skipLabel }}
+                                <!-- <i class="bi bi-skip-forward me-1" aria-hidden="true"></i>-->{{ $skipLabel }} 
                             </button>
                         </form>
                         @if ($round->phase === 'review')
