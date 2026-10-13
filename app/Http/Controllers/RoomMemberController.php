@@ -65,6 +65,7 @@ class RoomMemberController extends Controller
                 $isSelf || $isOwner,
                 $room->visibility === 'private' ? 404 : 403
             );
+            
             abort_if((int) $member->user_id === (int) $room->owner_id, 403);
 
             foreach ($rounds as $round) {

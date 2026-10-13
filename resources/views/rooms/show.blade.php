@@ -69,9 +69,8 @@
             <p class="room-description">{{ $room->description ?: 'ยังไม่มีรายละเอียดห้องนัดหมาย' }}</p>
         </div>
         <span class="badge {{ $room->visibility === 'public' ? 'text-bg-success' : 'text-bg-secondary' }} align-self-start mt-2">
-            <i class="bi {{ $room->visibility === 'public' ? 'bi-globe2' 
-            
-            : 'bi-lock' }} me-1" aria-hidden="true"></i>
+            <i class="bi {{ $room->visibility === 'public' ? 'bi-globe2' : 'bi-lock' }} me-1" 
+            aria-hidden="true"></i>
             {{ $room->visibility === 'public' ? 'สาธารณะ' : 'ส่วนตัว' }}
         </span>
     </div>
