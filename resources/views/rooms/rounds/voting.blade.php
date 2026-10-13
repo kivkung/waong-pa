@@ -14,7 +14,11 @@
                 <div class="alert alert-success">
                     <strong>เวลาที่ได้รับเลือก: {{ $winner->start_at->format('d/m/Y H:i') }} – {{ $winner->end_at->format('H:i') }} น.</strong>
                     <div>ได้รับ {{ $winner->votes_count }} โหวต · ว่าง {{ $winner->available_count }}/{{ $participantCount }} คน</div>
-                    <div class="small mt-1">เลือกจากคะแนนโหวตสูงสุด หากเท่ากันใช้คะแนนความพร้อม แล้วเลือกเวลาเร็วกว่า</div>
+                    @if ($winner->votes_count === 0)
+                        <div class="small mt-1">ระบบเลือกอัตโนมัติเนื่องจากไม่มีผู้โหวต โดยเลือกเวลาที่สมาชิกว่างมากที่สุด หากเท่ากันเลือกเวลาเร็วกว่า</div>
+                    @else
+                        <div class="small mt-1">เลือกจากคะแนนโหวตสูงสุด หากเท่ากันใช้คะแนนความพร้อม แล้วเลือกเวลาเร็วกว่า</div>
+                    @endif
                 </div>
                 <a class="btn btn-success mb-3" href="{{ route('rooms.rounds.calendar', [$room, $round]) }}">ดาวน์โหลดปฏิทิน .ics</a>
             @else

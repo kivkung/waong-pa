@@ -49,8 +49,8 @@ class ProcessMeetingRound
             }
             if (now()->gte($round->final_starts_at)) {
                 // เลือกคะแนนโหวตสูงสุด ถ้าเท่ากันใช้จำนวนคนว่าง แล้วใช้เวลาเร็วกว่า
-                // has('votes') ทำให้ไม่มีผู้ชนะเมื่อไม่มีใครโหวต
-                $winner = $round->candidates()->withCount('votes')->has('votes')
+                // ถ้าไม่มีผู้โหวต คะแนนโหวตจะเท่ากันที่ 0 จึงเลือกตามความพร้อมและเวลา
+                $winner = $round->candidates()->withCount('votes')
                     ->orderByDesc('votes_count')
                     ->orderByDesc('available_count')
                     ->orderBy('start_at')

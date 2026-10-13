@@ -19,6 +19,26 @@
         <div class="small mt-1">การเข้าร่วมรอบหมายถึงยินยอมให้ระบบใช้เฉพาะช่วงเวลาที่ไม่ว่างของคุณโดยอัตโนมัติ</div>
     </div>
     <div class="wa-grid mb-4">
+        @if ($round->recurrenceSchedule)
+            <section class="wa-panel" style="grid-column: 1 / -1;" aria-labelledby="recurrence-title">
+                <h2 class="wa-panel-title" id="recurrence-title">แผนสร้างรอบอัตโนมัติ</h2>
+                <p class="mb-2">{{ $round->recurrenceSchedule->frequency === 'weekly' ? 'ทุกสัปดาห์' : 'ทุกเดือน' }} · รอบตามแผนที่ {{ $round->recurrence_index + 1 }}/{{ $round->recurrenceSchedule->round_count }} · ข้ามแล้ว {{ $round->recurrenceSchedule->skipped_count }} รอบ</p>
+                @if ($round->recurrenceSchedule->is_active)
+                    <p class="small text-secondary">กำหนดเปิดรับรอบถัดไป {{ $round->recurrenceSchedule->next_run_at->format('d/m/Y H:i') }} น. ระบบสร้างเมื่อห้องไม่มีรอบที่กำลังดำเนินการ และยังไม่พ้นช่วงรับสมาชิก</p>
+                    @auth
+                        @if ((int) auth()->id() === (int) $room->owner_id)
+                            <form method="POST" action="{{ route('rooms.rounds.recurrence.stop', [$room, $round]) }}" onsubmit="return confirm('หยุดสร้างรอบถัดไป? รอบที่สร้างแล้วจะไม่ถูกยกเลิก')">
+                                @csrf
+                                @method('PATCH')
+                                <button class="btn btn-outline-danger btn-sm" type="submit">หยุดสร้างรอบถัดไป</button>
+                            </form>
+                        @endif
+                    @endauth
+                @else
+                    <p class="small text-secondary mb-0">แผนนี้หยุดแล้วหรือครบจำนวนรอบตามแผนแล้ว รอบที่สร้างไปแล้วยังคงอยู่</p>
+                @endif
+            </section>
+        @endif
         <section class="wa-panel" aria-labelledby="round-detail-title">
             <h2 class="wa-panel-title" id="round-detail-title">รายละเอียดรอบ</h2>
             <p class="wa-muted small">เงื่อนไขที่กำหนดไว้สำหรับรอบนัดหมายนี้</p>
@@ -94,7 +114,7 @@
                             @method('PATCH')
                             <input type="hidden" name="expected_phase" value="{{ $round->phase }}">
                             <button type="submit" class="btn btn-outline-primary">
-                                <i class="bi bi-skip-forward me-1" aria-hidden="true"></i>{{ $skipLabel }}
+                                <!-- <i class="bi bi-skip-forward me-1" aria-hidden="true"></i>-->{{ $skipLabel }} 
                             </button>
                         </form>
                         @if ($round->phase === 'review')
