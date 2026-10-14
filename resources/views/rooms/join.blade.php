@@ -2,7 +2,7 @@
 @section('title', 'เข้าร่วมห้อง')
 
 @push('styles')
-    <link rel="stylesheet" href="{{ asset('css/join-room.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/rooms-ui.css') }}">
 @endpush
 
 @section('content')
