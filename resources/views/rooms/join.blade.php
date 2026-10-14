@@ -13,7 +13,6 @@
                 <i class="bi bi-arrow-left"></i>
                 กลับหน้าหลัก
             </a>
-            <span class="join-top-label">ห้องนัดหมายของฉัน</span>
         </div>
 
         <header class="join-page-header">
@@ -22,14 +21,10 @@
                 <h1>เข้าร่วมห้อง</h1>
                 <p>กรอกรหัสเชิญจากเจ้าของห้อง เพื่อเข้าร่วมและดูรอบนัดหมาย</p>
             </div>
-
-            <div class="join-page-icon">
-                <i class="bi bi-box-arrow-in-right"></i>
-            </div>
         </header>
 
         <div class="join-content-layout">
-            <section class="join-form-card" aria-labelledby="join-form-title">
+            <section class="join-form-card">
                 <div class="join-form-header">
                     <span class="join-form-icon">
                         <i class="bi bi-key"></i>
@@ -56,17 +51,15 @@
                             value="{{ old('join_code') }}"
                             maxlength="100"
                             autocomplete="off"
-                            spellcheck="false"
                             placeholder="กรอกรหัสเชิญ 12 ตัวอักษร"
                             required
-                            aria-describedby="join-code-help"
                         >
 
                         @error('join_code')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
 
-                        <p id="join-code-help" class="join-field-help">
+                        <p class="join-field-help">
                             <i class="bi bi-info-circle"></i>
                             พิมพ์ตัวเล็กหรือตัวใหญ่ได้ ระบบจะปรับให้เอง
                         </p>
